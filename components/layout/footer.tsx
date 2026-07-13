@@ -44,8 +44,8 @@ export function Footer() {
 
       {/* Main footer */}
       {/* ✅ CHANGED: wider container + better side padding */}
-      <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+      <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-8 md:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
           {/* Brand */}
           <div className="md:col-span-4 space-y-4">
             {/* Footer logo (single mark + wordmark) */}
