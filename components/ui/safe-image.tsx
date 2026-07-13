@@ -3,9 +3,6 @@
 import * as React from 'react';
 import Image, { type ImageProps } from 'next/image';
 
-// Allowlisted remote hosts for Next/Image (OPTIONAL).
-// We keep this list for future use, but by default we do NOT use next/image for remote
-// to avoid runtime crashes when next.config.js images.domains / remotePatterns aren't set.
 const ALLOWED_REMOTE_HOSTS = new Set<string>([
   'images.pexels.com',
   'kybgrsqqvejbvjediowo.supabase.co',
@@ -23,7 +20,6 @@ try {
 }
 
 function looksLikeHostPath(src: string): boolean {
-  // e.g. example.com/path/to.jpg (no protocol)
   return /^[a-z0-9.-]+\.[a-z]{2,}(?:\/|$)/i.test(src);
 }
 
@@ -46,12 +42,24 @@ function isRemoteUrl(src: string): boolean {
   );
 }
 
+function isSupabaseUrl(src: string): boolean {
+  if (!src) return false;
+  try {
+    const u = new URL(src);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (supabaseUrl) {
+      const supaHost = new URL(supabaseUrl).hostname;
+      if (u.hostname === supaHost) return true;
+    }
+    return u.hostname.endsWith('.supabase.co');
+  } catch {
+    return false;
+  }
+}
+
 function isSafeForNextImageRemote(src: string): boolean {
-  // NOTE: Even if this returns true, next/image can still throw at runtime
-  // if next.config.js does not allow the hostname. That's why remote next/image is opt-in.
   if (!src) return false;
   if (src.startsWith('data:') || src.startsWith('blob:')) return false;
-
   try {
     const u = new URL(src);
     return ALLOWED_REMOTE_HOSTS.has(u.hostname);
@@ -66,45 +74,26 @@ function toProxyUrl(src: string): string {
 
 type SafeImageProps = Omit<ImageProps, 'src'> & {
   src: string;
-  /**
-   * Opt-in: if true, we may use next/image for allowlisted remote hosts.
-   * Default false to avoid client-side exceptions when Next image domains aren't configured.
-   */
   preferNextImageForRemote?: boolean;
 };
 
-/**
- * SafeImage
- * - Uses next/image for local /... assets.
- * - For remote URLs:
- *   - Uses <img> with referrerPolicy="no-referrer" to bypass many hotlink blocks.
- *   - On error, falls back to /api/image-proxy (adds caching + avoids mixed content).
- * - Optional opt-in to use next/image for allowlisted remote hosts via preferNextImageForRemote.
- */
 export function SafeImage({
   src,
   alt,
   fill,
   className,
-  // Keep default FALSE to avoid runtime crashes if Next/Image remotePatterns/domains
-  // aren't configured in the current deployment environment.
   preferNextImageForRemote = false,
   ...rest
 }: SafeImageProps) {
   const normalized = React.useMemo(() => normalizeRemoteSrc(String(src ?? '')), [src]);
 
-  // 1) Local assets: always safe for next/image
   const isLocal = normalized.startsWith('/');
 
-  // 2) Remote: default to <img> to avoid Next/Image domain config crashes
   const remoteOkForNextImage =
     preferNextImageForRemote && isRemoteUrl(normalized) && isSafeForNextImageRemote(normalized);
 
   if (isLocal || remoteOkForNextImage) {
-    // For local, Next.js optimizes safely.
-    // For remote, ONLY if user opted in and host is allowlisted.
     const { unoptimized, ...imgRest } = rest as any;
-
     return (
       <Image
         src={normalized}
@@ -117,7 +106,6 @@ export function SafeImage({
     );
   }
 
-  // For <img>, strip next/image-only props to avoid passing invalid DOM attributes.
   const {
     width,
     height,
@@ -133,12 +121,16 @@ export function SafeImage({
     ...imgRest
   } = rest as any;
 
-  // Always route remote images through the proxy to avoid hotlink blocks,
-  // mixed-content issues, and blank images. The proxy fetches server-side
-  // with a proper User-Agent and caches aggressively.
+  // Route remote images through proxy to avoid hotlink blocks.
+  // BUT: Skip proxy for Supabase URLs (our own storage, no hotlink blocks, and
+  // proxying them can cause issues with large images or auth-required buckets).
   const initial = React.useMemo(() => {
     if (!normalized) return '';
     if (isRemoteUrl(normalized)) {
+      // Don't proxy Supabase URLs - they're our own and directly accessible
+      if (isSupabaseUrl(normalized)) {
+        return normalized;
+      }
       return toProxyUrl(normalized);
     }
     return normalized;
@@ -152,7 +144,6 @@ export function SafeImage({
   const didProxyRef = React.useRef(false);
 
   const handleError: React.ReactEventHandler<HTMLImageElement> = (e) => {
-    // Call any consumer-provided handler too.
     try {
       onError?.(e);
     } catch {
@@ -164,6 +155,7 @@ export function SafeImage({
 
     if (!didProxyRef.current) {
       didProxyRef.current = true;
+      // If direct load failed (e.g. Supabase URL), try proxy as fallback
       setImgSrc(toProxyUrl(normalized));
     }
   };
