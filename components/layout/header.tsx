@@ -324,7 +324,7 @@ export function Header() {
       >
         <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 relative">
           {/* Slightly taller header so the brand mark can be clearly visible */}
-          <div className="h-20 flex items-center justify-between gap-3">
+          <div className="h-16 md:h-20 flex items-center justify-between gap-3">
             {/* Left: menu + brand */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button
@@ -344,7 +344,7 @@ export function Header() {
                   // Bigger logo (transparent background) for better visibility
                   width={420}
                   height={120}
-                  className="h-12 sm:h-14 md:h-16 w-auto"
+                  className="h-10 sm:h-12 md:h-16 w-auto"
                   priority
                 />
               </Link>
@@ -580,25 +580,25 @@ export function Header() {
 
       {/* Mobile bottom navigation bar — always visible on mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center justify-around h-14 px-1">
+        <div className="flex items-center justify-around h-16 px-1 pb-1">
           <Link href="/" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full">
             <Home className="h-5 w-5 text-blue-900" />
-            <span className="text-[10px] font-medium text-gray-700">Home</span>
+            <span className="text-[11px] font-medium text-gray-600">Home</span>
           </Link>
           <button
             onClick={() => setCategorySidebarOpen(true)}
             className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
           >
             <Menu className="h-5 w-5 text-gray-700" />
-            <span className="text-[10px] font-medium text-gray-700">Categories</span>
+            <span className="text-[11px] font-medium text-gray-600">Categories</span>
           </button>
           <Link href="/products" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full">
             <Search className="h-5 w-5 text-gray-700" />
-            <span className="text-[10px] font-medium text-gray-700">Shop</span>
+            <span className="text-[11px] font-medium text-gray-600">Shop</span>
           </Link>
           <Link href="/cart" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative">
             <ShoppingCart className="h-5 w-5 text-gray-700" />
-            <span className="text-[10px] font-medium text-gray-700">Cart</span>
+            <span className="text-[11px] font-medium text-gray-600">Cart</span>
             {itemCount > 0 && (
               <span className="absolute top-0.5 right-1/4">
                 <Badge className="bg-red-600 hover:bg-red-600 text-white px-1.5 py-0 text-[9px] rounded-full shadow">
@@ -609,7 +609,7 @@ export function Header() {
           </Link>
           <Link href="/wishlist" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative">
             <Heart className="h-5 w-5 text-gray-700" />
-            <span className="text-[10px] font-medium text-gray-700">Wishlist</span>
+            <span className="text-[11px] font-medium text-gray-600">Wishlist</span>
             {wishlistCount > 0 && (
               <span className="absolute top-0.5 right-1/4">
                 <Badge className="bg-blue-900 hover:bg-blue-900 text-white px-1.5 py-0 text-[9px] rounded-full shadow">
@@ -620,11 +620,11 @@ export function Header() {
           </Link>
           <Link href="/dashboard" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full">
             <User className="h-5 w-5 text-gray-700" />
-            <span className="text-[10px] font-medium text-gray-700">Account</span>
+            <span className="text-[11px] font-medium text-gray-600">Account</span>
           </Link>
         </div>
         {/* Safe area padding for iOS notch devices */}
-        <div className="h-[env(safe-area-inset-bottom)]" />
+        <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
       </nav>
     </>
   );

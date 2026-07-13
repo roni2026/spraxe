@@ -1665,7 +1665,7 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
 
         <div className="relative w-full max-w-7xl mx-auto px-3 md:px-4">
           {/* Row 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-2">
             {/* Paragraph 1 */}
             <div className="rounded-2xl p-4 md:p-6 bg-white text-gray-900 shadow-sm ring-1 ring-black/5 hover:shadow-md transition-shadow h-full">
               <h3 className="text-sm sm:text-base md:text-lg font-semibold tracking-tight text-gray-900">
@@ -1677,9 +1677,9 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
             </div>
 
             {/* Middle image carousel (managed from Admin → Featured Images) */}
-            <div className="rounded-2xl bg-white text-gray-900 shadow-sm ring-1 ring-black/5 hover:shadow-md transition-shadow h-full overflow-hidden">
+            <div className="rounded-2xl bg-white text-gray-900 shadow-sm ring-1 ring-black/5 hover:shadow-md transition-shadow h-full overflow-hidden min-h-[200px]">
               {infoCarouselImages.length > 0 ? (
-                <div className="relative w-full h-[240px] md:h-[260px]">
+                <div className="relative w-full h-[200px] md:h-[260px]">
                   <Carousel
                     opts={{ align: 'start', loop: infoCarouselImages.length > 1 }}
                     className="w-full h-full"
