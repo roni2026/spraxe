@@ -41,6 +41,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // Abort slow upstreams so the client-side fallback fires quickly instead of
+  // hanging on a dead/expiring hotlink (e.g. gstatic thumbnails).
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
   try {
     const upstream = await fetch(u.toString(), {
       headers: {
@@ -50,6 +55,7 @@ export async function GET(req: NextRequest) {
         'Referer': u.origin + '/',
       },
       cache: 'no-store',
+      signal: controller.signal,
     });
 
     if (!upstream.ok) {
@@ -58,6 +64,19 @@ export async function GET(req: NextRequest) {
 
     const contentType = upstream.headers.get('content-type') || 'image/jpeg';
     const bodyBuffer = await upstream.arrayBuffer();
+
+    // Reject non-image responses (hotlink blockers often return HTML pages).
+    if (!contentType.toLowerCase().startsWith('image/')) {
+      return NextResponse.json({ error: 'Not an image' }, { status: 404 });
+    }
+
+    // Reject the tiny 1x1 tracking/placeholder GIF that hosts like Google
+    // gstatic return once a cached-thumbnail token has expired. Treating it as
+    // a failure lets the component fall back / show its placeholder instead of
+    // rendering an invisible pixel.
+    if (bodyBuffer.byteLength <= 64) {
+      return NextResponse.json({ error: 'Expired or empty image' }, { status: 404 });
+    }
 
     return new NextResponse(bodyBuffer, {
       status: 200,
@@ -69,5 +88,7 @@ export async function GET(req: NextRequest) {
     });
   } catch {
     return NextResponse.json({ error: 'Upstream fetch failed' }, { status: 502 });
+  } finally {
+    clearTimeout(timeout);
   }
 }

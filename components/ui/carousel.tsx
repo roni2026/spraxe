@@ -161,6 +161,10 @@ const CarouselContent = React.forwardRef<
       ref={carouselRef}
       className={cn(
         'overflow-hidden select-none',
+        // Propagate height so `fill` images inside carousel items have a sized
+        // ancestor. `h-full` resolves to auto when the parent has no fixed
+        // height, so this is safe for natural-height (product) carousels.
+        'h-full',
         // Allow vertical scrolling while dragging horizontal carousels (and vice-versa).
         orientation === 'horizontal' ? 'touch-pan-y' : 'touch-pan-x'
       )}
