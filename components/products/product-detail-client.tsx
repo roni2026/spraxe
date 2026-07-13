@@ -1442,7 +1442,7 @@ export default function ProductDetailClient({
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8 flex-1">
+        <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 flex-1">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-7">
               <Skeleton className="w-full aspect-square rounded-2xl" />
