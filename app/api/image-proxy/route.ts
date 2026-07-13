@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 function isPrivateHost(hostname: string): boolean {
   const h = hostname.toLowerCase();
@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
         'Accept-Language': 'en-US,en;q=0.9',
         'Referer': u.origin + '/',
       },
-      cache: 'no-store',
+      cache: 'force-cache',
+      next: { revalidate: 86400 },
     });
 
     if (!upstream.ok) {
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': 'public, max-age=31536000, immutable',
         'Access-Control-Allow-Origin': '*',
       },
     });

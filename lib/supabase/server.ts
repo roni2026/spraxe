@@ -40,7 +40,7 @@ function missingEnvClient(label: string) {
  * Creates a Supabase client suitable for server-side rendering and server-only files.
  * This uses the public anon key, so it respects RLS.
  */
-const SUPABASE_FETCH_TIMEOUT_MS = Number(process.env.SUPABASE_FETCH_TIMEOUT_MS || 12000);
+const SUPABASE_FETCH_TIMEOUT_MS = Number(process.env.SUPABASE_FETCH_TIMEOUT_MS || 8000);
 
 function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit) {
   const hasSignal = Boolean(init?.signal);
