@@ -51,6 +51,21 @@ function isSupabaseUrl(src: string): boolean {
       const supaHost = new URL(supabaseUrl).hostname;
       if (u.hostname === supaHost) return true;
     }
+    return u.hostname.endsWith('.supabase.co') || u.hostname.endsWith('.supabase.in');
+  } catch {
+    return false;
+  }
+}
+
+function isSupabaseUrl(src: string): boolean {
+  if (!src) return false;
+  try {
+    const u = new URL(src);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (supabaseUrl) {
+      const supaHost = new URL(supabaseUrl).hostname;
+      if (u.hostname === supaHost) return true;
+    }
     return u.hostname.endsWith('.supabase.co');
   } catch {
     return false;

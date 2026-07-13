@@ -590,10 +590,14 @@ export function Header() {
             <Menu className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Categories</span>
           </button>
-          <Link href="/products" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full">
+          <button
+            onClick={() => setMobileSearchOpen((v) => !v)}
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+            aria-label="Search products"
+          >
             <Search className="h-5 w-5 text-gray-700" />
-            <span className="text-[11px] font-medium text-gray-600">Shop</span>
-          </Link>
+            <span className="text-[11px] font-medium text-gray-600">Search</span>
+          </button>
           <Link href="/cart" className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative">
             <ShoppingCart className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Cart</span>
