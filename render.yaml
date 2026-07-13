@@ -28,4 +28,7 @@ services:
         value: production
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
+      # Pin Node 18 — Next.js 13.5 + Node 20+ triggers "ReadableStream is already closed" streaming crash
+      - key: NODE_VERSION
+        value: "18.20.4"
 

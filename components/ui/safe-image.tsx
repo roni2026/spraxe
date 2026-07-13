@@ -123,11 +123,21 @@ export function SafeImage({
   // Route remote images through proxy to avoid hotlink blocks.
   // BUT: Skip proxy for Supabase URLs (our own storage, no hotlink blocks, and
   // proxying them can cause issues with large images or auth-required buckets).
-  // Strategy: load ALL images directly first (referrerPolicy=no-referrer bypasses
-  // most hotlink blocks, incl. gstatic). Only fall back to the /api/image-proxy
-  // route on an actual load error. This avoids blank images when the server-side
-  // proxy is slow/unavailable on constrained hosting (e.g. Render free tier).
-  const initial = React.useMemo(() => normalized, [normalized]);
+  // Strategy:
+  // - Supabase URLs + data/blob: load directly (our own storage, fast, no hotlink blocks)
+  // - All other remote URLs (gstatic, pexels, random CDNs): route through the
+  //   server-side /api/image-proxy. Many hosts (esp. Google gstatic) block direct
+  //   browser hotlinking even with no-referrer, but server-side fetch works fine.
+  //   On proxy failure we fall back to a direct load.
+  const initial = React.useMemo(() => {
+    if (!normalized) return '';
+    if (normalized.startsWith('data:') || normalized.startsWith('blob:')) return normalized;
+    if (isRemoteUrl(normalized)) {
+      if (isSupabaseUrl(normalized)) return normalized;
+      return toProxyUrl(normalized);
+    }
+    return normalized;
+  }, [normalized]);
 
   const [imgSrc, setImgSrc] = React.useState<string>(initial);
   React.useEffect(() => {
@@ -146,11 +156,12 @@ export function SafeImage({
     if (!normalized) return;
     if (!isRemoteUrl(normalized)) return;
 
-    // On direct-load failure, retry once through the server-side proxy
-    // (handles hotlink-protected hosts that block browser requests).
+    // Fallback chain: if the proxied URL failed, try loading the original
+    // directly; if a direct URL failed, try the proxy. Only one retry.
     if (!didProxyRef.current) {
       didProxyRef.current = true;
-      setImgSrc(toProxyUrl(normalized));
+      const isProxied = imgSrc.startsWith('/api/image-proxy');
+      setImgSrc(isProxied ? normalized : toProxyUrl(normalized));
     }
   };
 
