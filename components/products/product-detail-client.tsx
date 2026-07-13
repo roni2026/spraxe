@@ -810,7 +810,7 @@ function ReviewsSection({
         ) : reviews.length === 0 ? (
           <div className="text-sm text-gray-600">No reviews yet. Be the first!</div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-4">
             {reviews.map((r) => {
               const replies = r.replies || [];
               const hasReply = replies.length > 0;
@@ -1442,7 +1442,7 @@ export default function ProductDetailClient({
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50">
         <Header />
-        <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 flex-1">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-8 flex-1">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-7">
               <Skeleton className="w-full aspect-square rounded-2xl" />
@@ -1739,7 +1739,7 @@ export default function ProductDetailClient({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Gallery */}
-            <section className="lg:col-span-7 space-y-4">
+            <section className="lg:col-span-7 space-y-2 sm:space-y-4">
               <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden' : 'bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden'}>
                 <div
                     className={`relative aspect-square overflow-hidden ${isFashionLayout ? 'bg-gray-100' : 'bg-gray-50'}`}
@@ -1883,7 +1883,7 @@ export default function ProductDetailClient({
                 )}
               </div>
 
-              <div className="hidden lg:block space-y-4">
+              <div className="hidden lg:block space-y-2 sm:space-y-4">
                 {trustChipsEl}
                 {detailsTabsEl}
               </div>
@@ -1891,7 +1891,7 @@ export default function ProductDetailClient({
 
             {/* Sticky buy box */}
             <aside className="lg:col-span-5">
-              <div className="lg:sticky lg:top-24 space-y-4">
+              <div className="lg:sticky lg:top-24 space-y-2 sm:space-y-4">
                 <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm p-6' : 'bg-white border border-gray-100 rounded-2xl shadow-sm p-6'}>
                   <div className="flex items-start justify-between gap-3">
                     <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
@@ -2104,7 +2104,7 @@ export default function ProductDetailClient({
                   <div className="mt-5 space-y-3">
                     {!isFashionLayout && (
                       <Button
-                        className="w-full bg-blue-900 hover:bg-blue-800 h-11 sm:h-12 rounded-xl text-sm sm:text-base font-extrabold"
+                        className="w-full bg-blue-900 hover:bg-blue-800 h-11 sm:h-10 sm:h-12 rounded-xl text-sm sm:text-base font-extrabold"
                         onClick={handleBuyNow}
                         disabled={adding || outOfStock || (isClothing && !selectedSize)}
                       >
@@ -2151,7 +2151,7 @@ export default function ProductDetailClient({
           </div>
 
           {/* Mobile: show description/specs first, then shopping benefits */}
-          <div className="lg:hidden mt-6 space-y-4">
+          <div className="lg:hidden mt-6 space-y-2 sm:space-y-4">
             {detailsTabsEl}
             <ShoppingBenefitsCard />
           </div>

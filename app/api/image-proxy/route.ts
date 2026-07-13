@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function isPrivateHost(hostname: string): boolean {
   const h = hostname.toLowerCase();
@@ -49,8 +49,7 @@ export async function GET(req: NextRequest) {
         'Accept-Language': 'en-US,en;q=0.9',
         'Referer': u.origin + '/',
       },
-      cache: 'force-cache',
-      next: { revalidate: 86400 },
+      cache: 'no-store',
     });
 
     if (!upstream.ok) {

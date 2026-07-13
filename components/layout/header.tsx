@@ -370,7 +370,7 @@ export function Header() {
             {/* Right: actions */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {/* Wishlist */}
-              <Link href="/wishlist">
+              <Link href="/wishlist" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="relative gap-2 rounded-xl" aria-label="Wishlist">
                   <Heart className="h-5 w-5" />
                   <span className="hidden sm:inline font-semibold">Wishlist</span>
@@ -384,19 +384,15 @@ export function Header() {
                 </Button>
               </Link>
 
-              {/* ✅ Mobile search toggle (no navigation) */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden rounded-xl"
-                onClick={() => setMobileSearchOpen((v) => !v)}
-                aria-label={mobileSearchOpen ? 'Close search' : 'Open search'}
-              >
-                {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-              </Button>
+              {/* Track order icon (mobile only - search is in bottom nav) */}
+              <Link href="/track-order" className="md:hidden">
+                <Button variant="ghost" size="icon" className="rounded-xl" aria-label="Track order">
+                  <PackageSearch className="h-5 w-5" />
+                </Button>
+              </Link>
 
               {/* Cart */}
-              <Link href="/cart">
+              <Link href="/cart" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="relative gap-2 rounded-xl">
                   <ShoppingCart className="h-5 w-5" />
                   <span className="hidden sm:inline font-semibold">Cart</span>
@@ -410,7 +406,8 @@ export function Header() {
                 </Button>
               </Link>
 
-              {/* Account */}
+              {/* Account - hidden on mobile (in bottom nav) */}
+              <div className="hidden md:block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2 rounded-xl">
@@ -536,6 +533,7 @@ export function Header() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </div>
           </div>
 

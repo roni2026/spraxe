@@ -4,7 +4,7 @@ import { createServerSupabase } from '@/lib/supabase/server';
 import { isBuildTime } from '@/lib/isBuildTime';
 
 // Prevent streaming issues on Render — render fully server-side
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export const metadata: Metadata = {
