@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 
-const disableImageOptimization = process.env.DISABLE_IMAGE_OPTIMIZATION === '1';
+const disableImageOptimization =
+  process.env.RENDER === 'true' ||
+  process.env.DISABLE_IMAGE_OPTIMIZATION === '1';
 
 // Automatically allow the current Supabase project host for Next/Image.
 // This keeps images fast even if you change Supabase projects between environments.

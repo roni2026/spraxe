@@ -579,7 +579,7 @@ export default function CartPage() {
         )}
 
         <Button
-          className="w-full bg-blue-900 hover:bg-blue-800 h-11 text-base"
+          className="w-full bg-blue-900 hover:bg-blue-800 h-10 sm:h-11 text-sm sm:text-base"
           onClick={handleConfirmOrder}
           disabled={!canCheckout}
         >
@@ -601,12 +601,12 @@ export default function CartPage() {
               </div>
               <h2 className="text-xl font-semibold text-gray-900">Your cart is empty (কার্ট খালি)</h2>
               <p className="text-sm text-gray-600">Browse products and add items to continue to checkout (পণ্য যোগ করে চেকআউট করুন)।</p>
-              <div className="flex justify-center gap-2">
-                <Link href="/products">
-                  <Button className="bg-blue-900 hover:bg-blue-800">Start Shopping (শপিং শুরু করুন)</Button>
+              <div className="flex flex-col sm:flex-row justify-center gap-3 max-w-sm mx-auto">
+                <Link href="/products" className="w-full sm:w-auto">
+                  <Button className="w-full bg-blue-900 hover:bg-blue-800">Start Shopping</Button>
                 </Link>
-                <Link href="/">
-                  <Button variant="outline">Back to Home (হোমে ফিরে যান)</Button>
+                <Link href="/" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full">Back to Home</Button>
                 </Link>
               </div>
             </CardContent>
@@ -633,7 +633,7 @@ export default function CartPage() {
                     <span>Total</span>
                     <span>{fmtBDT(subtotal)}</span>
                   </div>
-                  <Button className="w-full h-12 bg-gray-900 hover:bg-black text-white text-base" onClick={() => setShowCheckoutForm(true)}>
+                  <Button className="w-full h-10 sm:h-12 bg-gray-900 hover:bg-black text-white text-sm sm:text-base" onClick={() => setShowCheckoutForm(true)}>
                     Place Order
                   </Button>
                   <Link href="/products" className="block">

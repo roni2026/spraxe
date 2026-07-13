@@ -123,17 +123,11 @@ export function SafeImage({
   // Route remote images through proxy to avoid hotlink blocks.
   // BUT: Skip proxy for Supabase URLs (our own storage, no hotlink blocks, and
   // proxying them can cause issues with large images or auth-required buckets).
-  const initial = React.useMemo(() => {
-    if (!normalized) return '';
-    if (isRemoteUrl(normalized)) {
-      // Don't proxy Supabase URLs - they're our own and directly accessible
-      if (isSupabaseUrl(normalized)) {
-        return normalized;
-      }
-      return toProxyUrl(normalized);
-    }
-    return normalized;
-  }, [normalized]);
+  // Strategy: load ALL images directly first (referrerPolicy=no-referrer bypasses
+  // most hotlink blocks, incl. gstatic). Only fall back to the /api/image-proxy
+  // route on an actual load error. This avoids blank images when the server-side
+  // proxy is slow/unavailable on constrained hosting (e.g. Render free tier).
+  const initial = React.useMemo(() => normalized, [normalized]);
 
   const [imgSrc, setImgSrc] = React.useState<string>(initial);
   React.useEffect(() => {
@@ -152,9 +146,10 @@ export function SafeImage({
     if (!normalized) return;
     if (!isRemoteUrl(normalized)) return;
 
+    // On direct-load failure, retry once through the server-side proxy
+    // (handles hotlink-protected hosts that block browser requests).
     if (!didProxyRef.current) {
       didProxyRef.current = true;
-      // If direct load failed (e.g. Supabase URL), try proxy as fallback
       setImgSrc(toProxyUrl(normalized));
     }
   };
