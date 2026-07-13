@@ -1679,7 +1679,7 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
             {/* Middle image carousel (managed from Admin → Featured Images) */}
             <div className="rounded-2xl bg-white text-gray-900 shadow-sm ring-1 ring-black/5 hover:shadow-md transition-shadow h-full overflow-hidden min-h-[200px]">
               {infoCarouselImages.length > 0 ? (
-                <div className="relative w-full h-[200px] md:h-[260px]">
+                <div className="relative w-full h-full min-h-[200px]">
                   <Carousel
                     opts={{ align: 'start', loop: infoCarouselImages.length > 1 }}
                     className="w-full h-full"
@@ -1754,7 +1754,7 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
                   ) : null}
                 </div>
               ) : (
-                <div className="w-full h-[240px] md:h-[260px] bg-gray-100 ring-1 ring-black/5 flex items-center justify-center text-sm text-gray-500">
+                <div className="w-full h-full min-h-[200px] bg-gray-100 ring-1 ring-black/5 flex items-center justify-center text-sm text-gray-500">
                   Add carousel images from Admin → Featured Images
                 </div>
               )}
