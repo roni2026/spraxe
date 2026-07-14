@@ -92,9 +92,8 @@ export function SafeImage({
   // automatically resized + compressed (AVIF/WebP). Other hosts (e.g. gstatic
   // hotlinks) still use the raw <img> proxy path below, since they aren't in
   // next.config's remotePatterns and can't be optimized safely.
-  void preferNextImageForRemote; // kept for API compatibility; safe hosts always optimize now
   const remoteOkForNextImage =
-    isRemoteUrl(normalized) && isSafeForNextImageRemote(normalized);
+    preferNextImageForRemote && isRemoteUrl(normalized) && isSafeForNextImageRemote(normalized);
 
   if (isLocal || remoteOkForNextImage) {
     const { unoptimized, ...imgRest } = rest as any;

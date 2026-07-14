@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 
-// Image optimization is ON by default: Next resizes images to the size actually
-// displayed and serves modern formats (AVIF/WebP), which turns 1-2MB uploads into
-// ~50-150KB responses and makes pages load much faster.
-// If it ever misbehaves on the host, set DISABLE_IMAGE_OPTIMIZATION=1 to revert.
 const disableImageOptimization =
+  process.env.RENDER === 'true' ||
   process.env.DISABLE_IMAGE_OPTIMIZATION === '1';
 
 // Automatically allow the current Supabase project host for Next/Image.
