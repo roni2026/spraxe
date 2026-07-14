@@ -153,7 +153,7 @@ export function CategorySidebar({ isOpen, onClose }: CategorySidebarProps) {
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="h-full bg-white shadow-2xl border-r border-gray-100 flex flex-col">
+        <div className="h-full bg-white shadow-2xl border-r border-gray-100 flex flex-col" style={{ contain: 'layout paint' }}>
           {/* Header */}
           <div className="px-4 py-4 border-b bg-gradient-to-b from-gray-50 to-white">
             <div className="flex items-center justify-between">
@@ -304,7 +304,7 @@ function IconBlock({ category }: { category: CategoryLite }) {
   return (
     <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden flex-shrink-0">
       {category.image_url ? (
-        <SafeImage src={category.image_url} alt={category.name} width={44} height={44} className="w-full h-full object-cover" />
+        <SafeImage src={category.image_url} alt={category.name} width={44} height={44} loading="eager" sizes="44px" className="w-full h-full object-cover" />
       ) : (
         <Package className="w-5 h-5 text-blue-900" />
       )}

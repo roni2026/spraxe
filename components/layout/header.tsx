@@ -579,26 +579,26 @@ export function Header() {
       {/* Mobile bottom navigation bar — always visible on mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ touchAction: 'manipulation' }}>
         <div className="flex items-center justify-around h-16 px-1 pb-1">
-          <Link href="/" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation">
+          <Link href="/" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
             <Home className="h-5 w-5 text-blue-900" />
             <span className="text-[11px] font-medium text-gray-600">Home</span>
           </Link>
           <button
             onClick={() => setCategorySidebarOpen(true)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
           >
             <Menu className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Categories</span>
           </button>
           <button
             onClick={() => setMobileSearchOpen((v) => !v)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
             aria-label="Search products"
           >
             <Search className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Search</span>
           </button>
-          <Link href="/cart" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-gray-100 transition-colors touch-manipulation">
+          <Link href="/cart" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
             <ShoppingCart className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Cart</span>
             {itemCount > 0 && (
@@ -609,7 +609,7 @@ export function Header() {
               </span>
             )}
           </Link>
-          <Link href="/wishlist" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-gray-100 transition-colors touch-manipulation">
+          <Link href="/wishlist" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
             <Heart className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Wishlist</span>
             {wishlistCount > 0 && (
@@ -620,7 +620,7 @@ export function Header() {
               </span>
             )}
           </Link>
-          <Link href="/dashboard" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation">
+          <Link href={user ? '/dashboard' : '/login'} prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
             <User className="h-5 w-5 text-gray-700" />
             <span className="text-[11px] font-medium text-gray-600">Account</span>
           </Link>
