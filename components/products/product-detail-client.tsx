@@ -1893,65 +1893,55 @@ export default function ProductDetailClient({
             <aside className="lg:col-span-5">
               <div className="lg:sticky lg:top-24 space-y-2 sm:space-y-4">
                 <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6' : 'bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-6'}>
-                  <div className="flex items-start justify-between gap-3">
-                    <h1 className="text-base sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight leading-snug">
-                      {product.name}
-                    </h1>
-
-                    <div className="hidden md:flex flex-col items-end">
-                      <div className="flex items-center gap-1 text-yellow-500">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <Star
-                            key={n}
-                            className={`h-4 w-4 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : ''}`}
-                          />
-                        ))}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {reviewCount > 0 ? `${reviewAvg.toFixed(1)} • ${reviewCount} reviews` : 'No reviews yet'}
-                      </div>
-                    </div>
+                  {/* Status pills */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs sm:text-sm font-bold ${outOfStock ? 'bg-red-600 text-white' : 'bg-blue-900 text-white'}`}>
+                      {outOfStock ? 'Out of stock' : `${product.stock_quantity} in stock`}
+                    </span>
+                    {retail > 0 && retail > price && (
+                      <span className="inline-flex items-center rounded-full bg-red-500 px-3 py-1 text-xs sm:text-sm font-bold text-white">
+                        {pct}% OFF
+                      </span>
+                    )}
+                    {!outOfStock && lowStock && (
+                      <span className="inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700">
+                        Low stock
+                      </span>
+                    )}
                   </div>
 
-                  {/* Mobile rating row — compact, inline */}
-                  <div className="mt-1.5 flex items-center gap-1.5 md:hidden">
+                  <h1 className="mt-2.5 text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                    {product.name}
+                  </h1>
+
+                  {/* Rating */}
+                  <div className="mt-1.5 flex items-center gap-2">
                     <div className="flex items-center gap-0.5 text-yellow-500">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <Star key={n} className={`h-3.5 w-3.5 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : ''}`} />
+                        <Star key={n} className={`h-4 w-4 sm:h-5 sm:w-5 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : 'text-gray-300'}`} />
                       ))}
                     </div>
-                    <div className="text-[11px] text-gray-500">
-                      {reviewCount > 0 ? `${reviewAvg.toFixed(1)} • ${reviewCount} reviews` : 'No reviews yet'}
-                    </div>
+                    {reviewCount > 0 ? (
+                      <>
+                        <span className="text-sm sm:text-base font-bold text-gray-900">{reviewAvg.toFixed(1)}</span>
+                        <span className="text-sm text-gray-500">({reviewCount} ratings)</span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-gray-500">No reviews yet</span>
+                    )}
                   </div>
 
-                  <Separator className="my-3 sm:my-5" />
-
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      <div className="text-xl sm:text-3xl font-extrabold text-blue-900">{moneyBDT(price)}</div>
-
-                      {retail > 0 && retail > price && (
-                        <div className="mt-1 flex items-center gap-2">
-                          <div className="text-sm text-gray-500 line-through">{moneyBDT(retail)}</div>
-                          <Badge className={isFashionLayout ? 'bg-red-50 text-red-700 border border-red-200 rounded-full' : 'bg-green-50 text-green-700 border border-green-200 rounded-full'}>
-                            {isFashionLayout ? `${pct}% Off` : `Save ${pct}% (${moneyBDT(savings)})`}
-                          </Badge>
-                        </div>
-                      )}
-
-                      <div className="text-xs text-gray-500 mt-2">Per {perUnit}</div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500">Stock</div>
-                      <div className={`text-sm font-bold ${outOfStock ? 'text-red-600' : 'text-gray-900'}`}>
-                        {outOfStock ? 'Out of stock' : `${product.stock_quantity} ${unitRaw}`}
-                      </div>
-                      {!outOfStock && lowStock && (
-                        <div className="text-xs text-orange-700 mt-1 font-semibold">Low stock – order soon</div>
-                      )}
-                    </div>
+                  {/* Price */}
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div className="text-3xl font-extrabold text-gray-900 leading-none">{moneyBDT(price)}</div>
+                    {retail > 0 && retail > price && (
+                      <>
+                        <div className="text-base sm:text-lg text-red-500 line-through font-semibold">{moneyBDT(retail)}</div>
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs sm:text-sm font-extrabold uppercase tracking-wide text-green-700">
+                          Save {moneyBDT(savings)}
+                        </span>
+                      </>
+                    )}
                   </div>
 
                   {/* Color variants — only show colors that were explicitly named.
@@ -2045,81 +2035,71 @@ export default function ProductDetailClient({
 
                   <Separator className="my-3 sm:my-5" />
 
-                  <div className="space-y-2">
-                    <Label className="text-sm text-gray-700">
-                      Quantity {maxQty > 0 ? <span className="text-xs text-gray-500">(max {maxQty})</span> : null}
-                    </Label>
-
-                    <div className={isFashionLayout ? 'flex items-center gap-3' : 'flex items-center gap-3'}>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setQuantity((q) => clamp(q - 1, 1, maxQty || 1))}
-                        disabled={quantity <= 1}
-                        className={isFashionLayout ? 'rounded-md bg-white' : 'rounded-xl bg-white'}
-                        type="button"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-
-                      <div className="flex-1">
-                        <Input
-                          type="number"
-                          value={quantity}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value) || 1;
-                            setQuantity(clamp(val, 1, maxQty || 1));
-                          }}
-                          min={1}
-                          max={maxQty || 1}
-                          className={isFashionLayout ? 'h-10 text-center rounded-md bg-white' : 'h-10 sm:h-11 text-center rounded-xl bg-white'}
-                        />
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setQuantity((q) => clamp(q + 1, 1, maxQty || 1))}
-                        disabled={maxQty > 0 ? quantity >= maxQty : true}
-                        className={isFashionLayout ? 'rounded-md bg-white' : 'rounded-xl bg-white'}
-                        type="button"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-
-                      {isFashionLayout && (
-                        <Button
-                          className="bg-gray-900 hover:bg-black text-white h-10 px-6 rounded-md text-xs font-semibold"
-                          onClick={handleAddToCart}
-                          disabled={adding || outOfStock || (isClothing && !selectedSize)}
+                  <div className="space-y-3">
+                    {/* Quantity */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Label className="text-sm font-semibold text-gray-800 shrink-0">Quantity:</Label>
+                      <div className="inline-flex items-center rounded-xl border border-gray-200 bg-white overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setQuantity((q) => clamp(q - 1, 1, maxQty || 1))}
+                          disabled={quantity <= 1}
+                          className="h-10 w-11 inline-flex items-center justify-center text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white"
+                          aria-label="Decrease quantity"
                         >
-                          {adding ? 'Adding...' : 'Add to Cart'}
-                        </Button>
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <div className="h-10 min-w-[3rem] px-2 flex items-center justify-center text-base font-bold text-gray-900 border-x border-gray-200">
+                          {quantity}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setQuantity((q) => clamp(q + 1, 1, maxQty || 1))}
+                          disabled={maxQty > 0 ? quantity >= maxQty : true}
+                          className="h-10 w-11 inline-flex items-center justify-center text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                      {!outOfStock && (
+                        <span className="text-sm text-gray-500">{product.stock_quantity} available</span>
                       )}
                     </div>
 
-                    <div className={isFashionLayout ? 'mt-3 flex items-center justify-between text-sm text-gray-700' : 'mt-3 rounded-xl bg-blue-50 border border-blue-100 p-3 sm:p-4 flex items-center justify-between'}>
-                      <div className={isFashionLayout ? 'font-semibold' : 'text-sm font-semibold text-blue-900'}>Total</div>
-                      <div className={isFashionLayout ? 'text-base font-bold text-gray-900' : 'text-base sm:text-lg font-extrabold text-blue-900'}>{moneyBDT(total)}</div>
+                    {/* Total */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">Total</span>
+                      <span className="text-lg font-extrabold text-gray-900">{moneyBDT(total)}</span>
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-2.5 sm:space-y-3">
-                    {!isFashionLayout && (
-                      <Button
-                        className="w-full bg-blue-900 hover:bg-blue-800 h-10 sm:h-12 rounded-xl text-sm sm:text-base font-extrabold"
-                        onClick={handleBuyNow}
-                        disabled={adding || outOfStock || (isClothing && !selectedSize)}
-                      >
-                        <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                        {adding ? 'Adding...' : 'Buy Now'}
-                      </Button>
-                    )}
+                  {/* Actions */}
+                  <div className="mt-4 space-y-2.5">
+                    <Button
+                      variant="outline"
+                      onClick={handleAddToCart}
+                      disabled={adding || outOfStock || (isClothing && !selectedSize)}
+                      className="w-full h-12 rounded-xl border-gray-300 bg-white text-gray-900 font-bold text-base hover:bg-gray-50"
+                      type="button"
+                    >
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      {adding ? 'Adding...' : 'Add to cart'}
+                    </Button>
+
+                    <Button
+                      onClick={handleBuyNow}
+                      disabled={adding || outOfStock || (isClothing && !selectedSize)}
+                      className="w-full bg-blue-900 hover:bg-blue-800 h-12 rounded-xl text-base font-extrabold text-white"
+                    >
+                      <CreditCard className="mr-2 h-5 w-5" />
+                      {adding ? 'Adding...' : 'Buy Now'}
+                    </Button>
 
                     <Button
                       variant="outline"
                       onClick={handleContactSeller}
-                      className={isFashionLayout ? 'w-full h-10 rounded-md border-green-600 text-green-600 hover:bg-green-50 font-semibold bg-white text-sm' : 'w-full h-10 sm:h-11 rounded-xl border-green-600 text-green-600 hover:bg-green-50 font-semibold bg-white text-sm'}
+                      className="w-full h-10 rounded-xl border-green-600 text-green-600 hover:bg-green-50 font-semibold bg-white text-sm"
                       type="button"
                     >
                       <MessageCircle className="mr-2 h-4 w-4" />
@@ -2127,12 +2107,12 @@ export default function ProductDetailClient({
                     </Button>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <Button variant="outline" onClick={toggleWishlist} className="h-10 sm:h-11 rounded-xl bg-white font-semibold text-sm" type="button">
+                      <Button variant="outline" onClick={toggleWishlist} className="h-10 rounded-xl bg-white font-semibold text-sm" type="button">
                         <Heart className={`mr-2 h-4 w-4 ${wishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                         {wishlisted ? 'Saved' : 'Save'}
                       </Button>
 
-                      <Button variant="outline" onClick={handleCopyLink} className="h-10 sm:h-11 rounded-xl bg-white font-semibold text-sm" type="button">
+                      <Button variant="outline" onClick={handleCopyLink} className="h-10 rounded-xl bg-white font-semibold text-sm" type="button">
                         <Copy className="mr-2 h-4 w-4" />
                         Copy link
                       </Button>
