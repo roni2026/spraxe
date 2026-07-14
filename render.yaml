@@ -28,7 +28,9 @@ services:
         value: production
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
-      # Pin Node 18 — Next.js 13.5 + Node 20+ triggers "ReadableStream is already closed" streaming crash
+      # Node 20 (LTS). Next.js 14 fixed the streaming "ReadableStream is already
+      # closed" crash that affected Next 13.5, and @supabase/supabase-js requires
+      # Node 20+.
       - key: NODE_VERSION
-        value: "18.20.4"
+        value: "20.18.0"
 
