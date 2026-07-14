@@ -88,8 +88,13 @@ export function SafeImage({
 
   const isLocal = normalized.startsWith('/');
 
+  // Route our own Supabase / allowlisted images through next/image so they get
+  // automatically resized + compressed (AVIF/WebP). Other hosts (e.g. gstatic
+  // hotlinks) still use the raw <img> proxy path below, since they aren't in
+  // next.config's remotePatterns and can't be optimized safely.
+  void preferNextImageForRemote; // kept for API compatibility; safe hosts always optimize now
   const remoteOkForNextImage =
-    preferNextImageForRemote && isRemoteUrl(normalized) && isSafeForNextImageRemote(normalized);
+    isRemoteUrl(normalized) && isSafeForNextImageRemote(normalized);
 
   if (isLocal || remoteOkForNextImage) {
     const { unoptimized, ...imgRest } = rest as any;

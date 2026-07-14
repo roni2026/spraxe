@@ -1007,8 +1007,8 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
 
                 {heroFeaturedImages.length > 1 ? (
                   <>
-                    <CarouselPrevious className="left-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 h-9 w-9" />
-                    <CarouselNext className="right-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 h-9 w-9" />
+                    <CarouselPrevious className="left-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 h-7 w-7 md:h-9 md:w-9" />
+                    <CarouselNext className="right-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 h-7 w-7 md:h-9 md:w-9" />
                   </>
                 ) : null}
 

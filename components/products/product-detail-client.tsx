@@ -1713,27 +1713,27 @@ export default function ProductDetailClient({
 
       <main className="flex-1">
         <div className={isFashionLayout ? 'container mx-auto px-4 py-6 lg:py-8' : 'container mx-auto px-4 py-6 lg:py-10'}>
-          <nav className="flex items-center text-sm text-gray-500 mb-5 overflow-x-auto whitespace-nowrap pb-2">
-            <Link href="/" className="hover:text-blue-900 flex items-center">
-              <Home className="w-4 h-4 mr-1" />
-              Home
+          <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-5 overflow-x-auto whitespace-nowrap pb-2">
+            <Link href="/" className="inline-flex items-center gap-1 hover:text-blue-900 shrink-0">
+              <Home className="w-4 h-4" />
+              <span>Home</span>
             </Link>
 
-            <ChevronRight className="w-4 h-4 mx-2 text-gray-400" />
-            <Link href="/products" className="hover:text-blue-900">
+            <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+            <Link href="/products" className="hover:text-blue-900 shrink-0">
               Products
             </Link>
 
             {categoryChain.map((cat) => (
-              <div key={cat.id} className="flex items-center">
-                <ChevronRight className="w-4 h-4 mx-2 text-gray-400" />
+              <div key={cat.id} className="flex items-center gap-1.5 shrink-0">
+                <ChevronRight className="w-4 h-4 text-gray-400" />
                 <Link href={`/${cat.slug}`} className="hover:text-blue-900 font-medium">
                   {cat.name}
                 </Link>
               </div>
             ))}
 
-            <ChevronRight className="w-4 h-4 mx-2 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
             <span className="text-gray-900 font-semibold truncate max-w-[240px]">{product.name}</span>
           </nav>
 
@@ -1892,9 +1892,9 @@ export default function ProductDetailClient({
             {/* Sticky buy box */}
             <aside className="lg:col-span-5">
               <div className="lg:sticky lg:top-24 space-y-2 sm:space-y-4">
-                <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm p-6' : 'bg-white border border-gray-100 rounded-2xl shadow-sm p-6'}>
+                <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6' : 'bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-6'}>
                   <div className="flex items-start justify-between gap-3">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                    <h1 className="text-base sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight leading-snug">
                       {product.name}
                     </h1>
 
@@ -1913,23 +1913,23 @@ export default function ProductDetailClient({
                     </div>
                   </div>
 
-                  {/* Mobile rating row */}
-                  <div className="mt-3 flex items-center justify-between gap-3 md:hidden">
-                    <div className="flex items-center gap-1 text-yellow-500">
+                  {/* Mobile rating row — compact, inline */}
+                  <div className="mt-1.5 flex items-center gap-1.5 md:hidden">
+                    <div className="flex items-center gap-0.5 text-yellow-500">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <Star key={n} className={`h-4 w-4 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : ''}`} />
+                        <Star key={n} className={`h-3.5 w-3.5 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : ''}`} />
                       ))}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-[11px] text-gray-500">
                       {reviewCount > 0 ? `${reviewAvg.toFixed(1)} • ${reviewCount} reviews` : 'No reviews yet'}
                     </div>
                   </div>
 
-                  <Separator className="my-5" />
+                  <Separator className="my-3 sm:my-5" />
 
                   <div className="flex items-end justify-between gap-3">
                     <div>
-                      <div className="text-2xl sm:text-3xl font-extrabold text-blue-900">{moneyBDT(price)}</div>
+                      <div className="text-xl sm:text-3xl font-extrabold text-blue-900">{moneyBDT(price)}</div>
 
                       {retail > 0 && retail > price && (
                         <div className="mt-1 flex items-center gap-2">
@@ -1954,15 +1954,18 @@ export default function ProductDetailClient({
                     </div>
                   </div>
 
-                  {/* Color variants */}
-                  {variants.length > 1 && (
+                  {/* Color variants — only show colors that were explicitly named.
+                      The unnamed base product is NOT rendered as a "Default" swatch. */}
+                  {variants.filter((v) => String((v as any).color_name || '').trim()).length > 0 && (
                     <div className="mt-4">
                       <Label className="text-sm text-gray-700">Color</Label>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {variants.map((v) => {
+                        {variants
+                          .filter((v) => String((v as any).color_name || '').trim())
+                          .map((v) => {
                           const active = v.id === (product as any).id;
                           const hex = (v as any).color_hex as string | null | undefined;
-                          const name = String((v as any).color_name || '').trim() || 'Default';
+                          const name = String((v as any).color_name || '').trim();
                           const isOut = (v.stock_quantity ?? 0) <= 0;
 
                           return (
@@ -2040,7 +2043,7 @@ export default function ProductDetailClient({
                     </div>
                   )}
 
-                  <Separator className="my-5" />
+                  <Separator className="my-3 sm:my-5" />
 
                   <div className="space-y-2">
                     <Label className="text-sm text-gray-700">
@@ -2069,7 +2072,7 @@ export default function ProductDetailClient({
                           }}
                           min={1}
                           max={maxQty || 1}
-                          className={isFashionLayout ? 'h-10 text-center rounded-md bg-white' : 'h-11 text-center rounded-xl bg-white'}
+                          className={isFashionLayout ? 'h-10 text-center rounded-md bg-white' : 'h-10 sm:h-11 text-center rounded-xl bg-white'}
                         />
                       </div>
 
@@ -2095,16 +2098,16 @@ export default function ProductDetailClient({
                       )}
                     </div>
 
-                    <div className={isFashionLayout ? 'mt-3 flex items-center justify-between text-sm text-gray-700' : 'mt-3 rounded-2xl bg-blue-50 border border-blue-100 p-4 flex items-center justify-between'}>
+                    <div className={isFashionLayout ? 'mt-3 flex items-center justify-between text-sm text-gray-700' : 'mt-3 rounded-xl bg-blue-50 border border-blue-100 p-3 sm:p-4 flex items-center justify-between'}>
                       <div className={isFashionLayout ? 'font-semibold' : 'text-sm font-semibold text-blue-900'}>Total</div>
-                      <div className={isFashionLayout ? 'text-base font-bold text-gray-900' : 'text-lg font-extrabold text-blue-900'}>{moneyBDT(total)}</div>
+                      <div className={isFashionLayout ? 'text-base font-bold text-gray-900' : 'text-base sm:text-lg font-extrabold text-blue-900'}>{moneyBDT(total)}</div>
                     </div>
                   </div>
 
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-4 space-y-2.5 sm:space-y-3">
                     {!isFashionLayout && (
                       <Button
-                        className="w-full bg-blue-900 hover:bg-blue-800 h-11 sm:h-10 sm:h-12 rounded-xl text-sm sm:text-base font-extrabold"
+                        className="w-full bg-blue-900 hover:bg-blue-800 h-10 sm:h-12 rounded-xl text-sm sm:text-base font-extrabold"
                         onClick={handleBuyNow}
                         disabled={adding || outOfStock || (isClothing && !selectedSize)}
                       >

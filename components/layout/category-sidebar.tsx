@@ -135,7 +135,7 @@ export function CategorySidebar({ isOpen, onClose }: CategorySidebarProps) {
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity ${
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ease-out ${
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={onClose}
@@ -149,7 +149,7 @@ export function CategorySidebar({ isOpen, onClose }: CategorySidebarProps) {
         aria-label="Category menu"
         className={`
           fixed top-0 left-0 z-50 h-full w-[340px] max-w-[90vw]
-          transform transition-transform duration-300 ease-out
+          transform-gpu will-change-transform transition-transform duration-300 ease-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >

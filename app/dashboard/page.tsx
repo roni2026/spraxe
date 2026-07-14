@@ -380,7 +380,11 @@ window.history.replaceState = (...args: Parameters<History["replaceState"]>) => 
   };
 
   // Loading
-  if (authLoading) {
+  // While auth is resolving OR when there is no signed-in user, show the
+  // loading state instead of the dashboard body. This prevents the brief
+  // "profile flashes then jumps to login" bug: previously the full dashboard
+  // rendered for one paint with a null user before the redirect effect ran.
+  if (authLoading || !user) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50">
         <Header />
