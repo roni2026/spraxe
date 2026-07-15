@@ -19,6 +19,42 @@ try {
   // ignore
 }
 
+// ---------------------------------------------------------------------------
+// Cloudinary Fetch delivery
+// ---------------------------------------------------------------------------
+// When NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is set, every remote http(s) image is
+// delivered through Cloudinary's Fetch pipeline:
+//
+//   https://res.cloudinary.com/<cloud>/image/fetch/<transforms>/<original-url>
+//
+// Cloudinary pulls the original from Supabase once, converts it to the best
+// modern format for the requesting browser (f_auto -> AVIF/WebP), compresses it
+// intelligently (q_auto), only ever downscales (c_limit), and serves every
+// subsequent request from its global CDN with a long immutable cache. We build a
+// responsive srcSet so the browser downloads only the width it actually needs.
+//
+// This bypasses next/image entirely for remote images, so it is unaffected by
+// the host image optimizer (which misbehaved on Render). If Cloudinary ever
+// fails to load an image, we gracefully fall back to the original URL, so an
+// image is never blank.
+const CLOUDINARY_CLOUD = (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? '').trim();
+const CLOUDINARY_ENABLED = CLOUDINARY_CLOUD.length > 0;
+
+// Widths offered to the browser via srcSet. Covers tiny thumbnails through
+// full-bleed hero banners; the browser picks the smallest that fits.
+const CLOUDINARY_WIDTHS = [64, 96, 128, 160, 256, 384, 640, 828, 1080, 1280, 1600, 1920];
+
+function buildCloudinaryUrl(originalUrl: string, width?: number): string {
+  const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch`;
+  const transforms = ['f_auto', 'q_auto', 'c_limit'];
+  if (width && Number.isFinite(width)) transforms.push(`w_${Math.round(width)}`);
+  return `${base}/${transforms.join(',')}/${encodeURIComponent(originalUrl)}`;
+}
+
+function buildCloudinarySrcSet(originalUrl: string): string {
+  return CLOUDINARY_WIDTHS.map((w) => `${buildCloudinaryUrl(originalUrl, w)} ${w}w`).join(', ');
+}
+
 function looksLikeHostPath(src: string): boolean {
   return /^[a-z0-9.-]+\.[a-z]{2,}(?:\/|$)/i.test(src);
 }
@@ -91,13 +127,22 @@ export function SafeImage({
   const normalized = React.useMemo(() => normalizeRemoteSrc(String(src ?? '')), [src]);
 
   const isLocal = normalized.startsWith('/');
+  const isData = normalized.startsWith('data:') || normalized.startsWith('blob:');
+
+  // When Cloudinary is enabled, deliver ALL remote images through it (bypassing
+  // next/image), so optimization is consistent and independent of the host
+  // optimizer. Local, data and blob images are never sent to Cloudinary.
+  const useCloudinary = CLOUDINARY_ENABLED && isRemoteUrl(normalized) && !isData;
 
   // Route our own Supabase / allowlisted images through next/image so they get
   // automatically resized + compressed (AVIF/WebP). Other hosts (e.g. gstatic
   // hotlinks) still use the raw <img> proxy path below, since they aren't in
   // next.config's remotePatterns and can't be optimized safely.
   const remoteOkForNextImage =
-    preferNextImageForRemote && isRemoteUrl(normalized) && isSafeForNextImageRemote(normalized);
+    !useCloudinary &&
+    preferNextImageForRemote &&
+    isRemoteUrl(normalized) &&
+    isSafeForNextImageRemote(normalized);
 
   if (isLocal || remoteOkForNextImage) {
     const { unoptimized, ...imgRest } = rest as any;
@@ -125,6 +170,7 @@ export function SafeImage({
     unoptimized,
     onLoadingComplete,
     onError,
+    sizes,
     ...imgRest
   } = rest as any;
 
@@ -132,6 +178,8 @@ export function SafeImage({
   // BUT: Skip proxy for Supabase URLs (our own storage, no hotlink blocks, and
   // proxying them can cause issues with large images or auth-required buckets).
   // Strategy:
+  // - Cloudinary enabled + remote URL: deliver via Cloudinary Fetch (f_auto,
+  //   q_auto, c_limit) with a responsive srcSet. Falls back to the original on error.
   // - Supabase URLs + data/blob: load directly (our own storage, fast, no hotlink blocks)
   // - All other remote URLs (gstatic, pexels, random CDNs): route through the
   //   server-side /api/image-proxy. Many hosts (esp. Google gstatic) block direct
@@ -139,20 +187,28 @@ export function SafeImage({
   //   On proxy failure we fall back to a direct load.
   const initial = React.useMemo(() => {
     if (!normalized) return '';
-    if (normalized.startsWith('data:') || normalized.startsWith('blob:')) return normalized;
+    if (isData) return normalized;
+    if (useCloudinary) return buildCloudinaryUrl(normalized, typeof width === 'number' ? width : undefined);
     if (isRemoteUrl(normalized)) {
       if (isSupabaseUrl(normalized)) return normalized;
       return toProxyUrl(normalized);
     }
     return normalized;
-  }, [normalized]);
+  }, [normalized, useCloudinary, isData, width]);
+
+  const initialSrcSet = React.useMemo(() => {
+    if (useCloudinary && !isData && isRemoteUrl(normalized)) return buildCloudinarySrcSet(normalized);
+    return undefined;
+  }, [useCloudinary, isData, normalized]);
 
   const [imgSrc, setImgSrc] = React.useState<string>(initial);
+  const [imgSrcSet, setImgSrcSet] = React.useState<string | undefined>(initialSrcSet);
   React.useEffect(() => {
     setImgSrc(initial);
-  }, [initial]);
+    setImgSrcSet(initialSrcSet);
+  }, [initial, initialSrcSet]);
 
-  const didProxyRef = React.useRef(false);
+  const didFallbackRef = React.useRef(false);
 
   const handleError: React.ReactEventHandler<HTMLImageElement> = (e) => {
     try {
@@ -163,20 +219,30 @@ export function SafeImage({
 
     if (!normalized) return;
     if (!isRemoteUrl(normalized)) return;
+    if (didFallbackRef.current) return;
+    didFallbackRef.current = true;
 
-    // Fallback chain: if the proxied URL failed, try loading the original
-    // directly; if a direct URL failed, try the proxy. Only one retry.
-    if (!didProxyRef.current) {
-      didProxyRef.current = true;
-      const isProxied = imgSrc.startsWith('/api/image-proxy');
-      setImgSrc(isProxied ? normalized : toProxyUrl(normalized));
+    // Fallback chain (one retry):
+    // - If Cloudinary failed, drop it and load the original URL directly
+    //   (Supabase) or via the proxy (other hosts). Never leaves the image blank.
+    // - Otherwise: if a proxied URL failed, try the original; if the original
+    //   failed, try the proxy.
+    if (useCloudinary && (imgSrc.includes('res.cloudinary.com') || imgSrcSet)) {
+      setImgSrcSet(undefined);
+      setImgSrc(isSupabaseUrl(normalized) ? normalized : toProxyUrl(normalized));
+      return;
     }
+
+    const isProxied = imgSrc.startsWith('/api/image-proxy');
+    setImgSrc(isProxied ? normalized : toProxyUrl(normalized));
   };
 
   // eslint-disable-next-line @next/next/no-img-element
   return (
     <img
       src={imgSrc}
+      srcSet={imgSrcSet}
+      sizes={imgSrcSet ? (sizes ?? '100vw') : sizes}
       alt={alt}
       loading={loading ?? 'lazy'}
       decoding="async"
