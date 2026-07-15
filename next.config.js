@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 
-// Image optimization is ON by default (recommended): Next resizes + serves
-// AVIF/WebP, which is a huge win for an image-heavy storefront. It can be
-// explicitly disabled per-environment with DISABLE_IMAGE_OPTIMIZATION=1 if a
-// host has tight memory limits.
+// Image optimization is disabled on Render (and can be disabled anywhere via
+// DISABLE_IMAGE_OPTIMIZATION=1). Render's on-the-fly optimizer was returning
+// blank images for remote Supabase sources, so we serve images directly there.
 const disableImageOptimization =
+  process.env.RENDER === 'true' ||
   process.env.DISABLE_IMAGE_OPTIMIZATION === '1';
 
 // Automatically allow the current Supabase project host for Next/Image.
@@ -42,9 +42,6 @@ if (supabaseHost) {
   });
 }
 
-const imageDomains = ['images.pexels.com'];
-if (supabaseHost) imageDomains.push(supabaseHost);
-
 const nextConfig = {
   poweredByHeader: false,
   eslint: {
@@ -58,10 +55,8 @@ const nextConfig = {
     // Cache optimized images longer (helps perceived performance)
     minimumCacheTTL: 60 * 60 * 24 * 30,
 
-    // External domains
-    domains: imageDomains,
-
-    // Remote patterns (Supabase + other allowlisted sources)
+    // Remote patterns (Supabase + other allowlisted sources).
+    // NOTE: `images.domains` is deprecated in favor of `remotePatterns`.
     remotePatterns: baseRemotePatterns,
   },
 
