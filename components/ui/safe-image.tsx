@@ -40,9 +40,10 @@ try {
 const CLOUDINARY_CLOUD = (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? '').trim();
 const CLOUDINARY_ENABLED = CLOUDINARY_CLOUD.length > 0;
 
-// Widths offered to the browser via srcSet. Covers tiny thumbnails through
-// full-bleed hero banners; the browser picks the smallest that fits.
-const CLOUDINARY_WIDTHS = [64, 96, 128, 160, 256, 384, 640, 828, 1080, 1280, 1600, 1920];
+// Widths offered to the browser via srcSet. Kept to a small, well-spread set so
+// the browser can still pick a size close to what it needs (thumbnail → hero)
+// without bloating the HTML with a dozen long URLs per image.
+const CLOUDINARY_WIDTHS = [96, 256, 512, 828, 1280, 1920];
 
 // A native Cloudinary delivery URL already hosted in our account, e.g.
 // https://res.cloudinary.com/<cloud>/image/upload/v123/spraxe/...

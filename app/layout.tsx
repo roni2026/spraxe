@@ -13,7 +13,7 @@ import { FloatingCartButton } from '@/components/cart/floating-cart-button';
 import { CompareBar } from '@/components/compare/compare-bar';
 import GAEvents from '@/components/GAEvents';
 import { getSiteUrl } from '@/lib/supabase/server';
-import { getRequestOrigin, toSafeUrl } from '@/lib/site-url.server';
+import { toSafeUrl } from '@/lib/site-url.server';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-XXXXXXXXXX';
 
@@ -28,9 +28,10 @@ try {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Prefer request-derived origin (works for both Render default URL and custom domains).
-  // Fallback to env-based configuration.
-  const base = getRequestOrigin(getSiteUrl());
+  // Use the configured canonical site URL (env-based) rather than the per-request
+  // host. Reading request headers here would force every page to render
+  // dynamically and defeat CDN caching; the canonical domain is also better for SEO.
+  const base = getSiteUrl();
   const metadataBase = toSafeUrl(base);
 
   return {
@@ -97,7 +98,7 @@ export const viewport: Viewport = {
 
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const siteOrigin = getRequestOrigin(getSiteUrl());
+  const siteOrigin = getSiteUrl();
   return (
     // NOTE: We intentionally avoid `next/font/google` here.
     // Some hosting/build environments block outbound access to Google Fonts,

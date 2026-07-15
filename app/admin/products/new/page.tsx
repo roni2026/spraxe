@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary/client';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -504,25 +505,9 @@ export default function NewProductPage() {
       const uploaded: Array<{ path: string; url: string }> = [];
 
       for (const f of list) {
-        const fileName = sanitizeFileName(f.name) || `image-${Math.random().toString(16).slice(2)}.jpg`;
-        const path = `${prefix}/${fileName}`;
-
-        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, f, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: f.type,
-        });
-
-        if (upErr) throw upErr;
-
-        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        const publicUrl = data?.publicUrl;
-
-        if (!publicUrl) {
-          throw new Error('Could not generate public URL. Make sure the bucket is public or use signed URLs.');
-        }
-
-        uploaded.push({ path, url: publicUrl });
+        // Upload directly to Cloudinary (no longer Supabase Storage).
+        const { url: publicUrl } = await uploadToCloudinary(f, 'product-images');
+        uploaded.push({ path: publicUrl, url: publicUrl });
       }
 
       setUploadedImages((prev) => [...prev, ...uploaded]);
@@ -537,7 +522,13 @@ export default function NewProductPage() {
   }
 
   function removeUploadedImage(idx: number) {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== idx));
+    setUploadedImages((prev) => {
+      // These are freshly uploaded and not yet attached to a saved product, so
+      // it is safe to delete the Cloudinary asset immediately.
+      const target = prev[idx];
+      if (target?.url) void deleteFromCloudinary(target.url);
+      return prev.filter((_, i) => i !== idx);
+    });
   }
 
   function setHotlinkAt(i: number, v: string) {

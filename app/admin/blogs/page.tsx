@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { uploadToCloudinary } from '@/lib/cloudinary/client';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -304,21 +305,8 @@ export default function AdminBlogsPage() {
     if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed.');
     if (file.size > 5 * 1024 * 1024) throw new Error('Max 5MB per image.');
 
-    const fileName = sanitizeFileName(file.name) || `image-${Math.random().toString(16).slice(2)}.jpg`;
-    const path = `${user.id}/${prefix}/${Date.now()}-${fileName}`;
-
-    const { error: upErr } = await supabase.storage.from(BLOG_BUCKET).upload(path, file, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: file.type,
-    });
-    if (upErr) throw upErr;
-
-    const { data } = supabase.storage.from(BLOG_BUCKET).getPublicUrl(path);
-    const publicUrl = data?.publicUrl;
-    if (!publicUrl) {
-      throw new Error('Could not generate public URL. Make sure the bucket is public (or use signed URLs).');
-    }
+    // Upload directly to Cloudinary (no longer Supabase Storage).
+    const { url: publicUrl } = await uploadToCloudinary(file, `blog-images/${prefix}`);
     return publicUrl;
   }
 

@@ -180,9 +180,12 @@ export default function SupportDashboard() {
 
       const withUrls = await Promise.all(
         (data || []).map(async (a: any) => {
+          if (a.file_path && String(a.file_path).startsWith('http')) {
+            return { ...a, url: a.file_path };
+          }
           const { data: signed, error: signErr } = await supabase.storage
             .from(BUCKET)
-            .createSignedUrl(a.file_path, 60 * 60); // 1 hour
+            .createSignedUrl(a.file_path, 60 * 60); // 1 hour (legacy Supabase attachments)
           if (signErr) {
             // If signed URL fails for any reason, still return the row so UI can show filename.
             return { ...a, url: null };

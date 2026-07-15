@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
+import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary/client';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -164,18 +165,9 @@ export default function FeaturedImagesManagement() {
   };
 
   const uploadToStorage = async (file: File) => {
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'jpg';
-    const path = `featured/${Date.now()}-${Math.random().toString(16).slice(2)}.${safeExt}`;
-
-    const { error } = await supabase.storage
-      .from(FEATURE_BUCKET)
-      .upload(path, file, { cacheControl: '31536000', upsert: false, contentType: file.type || undefined });
-
-    if (error) throw error;
-
-    const { data } = supabase.storage.from(FEATURE_BUCKET).getPublicUrl(path);
-    return { publicUrl: data.publicUrl, path };
+    // Upload directly to Cloudinary (no longer Supabase Storage).
+    const { url, publicId } = await uploadToCloudinary(file, 'feature-image');
+    return { publicUrl: url, path: publicId };
   };
 
   const handlePickFile = (id: number, variant: 'desktop' | 'mobile') => {
@@ -346,11 +338,15 @@ export default function FeaturedImagesManagement() {
   };
 
   const handleDelete = async (id: number) => {
+    const target = (images || []).find((img: FeaturedImage) => img.id === id);
     const { error } = await supabase.from('featured_images').delete().eq('id', id);
 
     if (error) {
       toast({ title: 'Error', description: 'Failed to delete image', variant: 'destructive' });
     } else {
+      // Clean up the Cloudinary assets for this featured slot.
+      if (target?.image_url) void deleteFromCloudinary(target.image_url);
+      if (target?.mobile_image_url) void deleteFromCloudinary(target.mobile_image_url);
       toast({ title: 'Success', description: 'Featured image deleted' });
       await loadImages();
     }

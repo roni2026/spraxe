@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
+import { uploadToCloudinary } from '@/lib/cloudinary/client';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
@@ -234,6 +235,11 @@ export default function SupportPage() {
 
     const withUrls = await Promise.all(
       (data || []).map(async (a: any) => {
+        // New attachments store a full Cloudinary URL; use it directly.
+        if (a.file_path && String(a.file_path).startsWith('http')) {
+          return { ...a, url: a.file_path };
+        }
+        // Legacy Supabase-storage attachments: fall back to a signed URL.
         const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(a.file_path, 60 * 60);
         return { ...a, url: signed?.signedUrl || null };
       })
@@ -293,20 +299,15 @@ export default function SupportPage() {
     for (const file of safeFiles) {
       if (!file.type.startsWith('image/')) continue;
 
-      const path = `${user.id}/${ticketId}/${crypto.randomUUID()}-${sanitizeName(file.name)}`;
-
-      const up = await supabase.storage.from(BUCKET).upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-
-      if (up.error) throw up.error;
+      // Upload directly to Cloudinary (no longer Supabase Storage). We store the
+      // full Cloudinary URL in file_path so reads no longer need signed URLs.
+      const { url: cloudUrl } = await uploadToCloudinary(file, `support/${ticketId}`);
 
       const ins = await supabase.from('support_attachments').insert({
         ticket_id: ticketId,
         reply_id: replyId || null,
         uploader_id: user.id,
-        file_path: path,
+        file_path: cloudUrl,
         file_name: file.name,
         content_type: file.type,
         size: file.size,

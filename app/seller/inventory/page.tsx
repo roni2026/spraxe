@@ -19,6 +19,7 @@ import { SafeImage } from '@/components/ui/safe-image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 import { supabase } from '@/lib/supabase/client';
+import { uploadToCloudinary } from '@/lib/cloudinary/client';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useToast } from '@/hooks/use-toast';
 
@@ -255,17 +256,9 @@ export default function SellerInventoryPage() {
     try {
       const uploaded: string[] = [];
       for (const f of list) {
-        const path = `${user!.id}/${editing.id}/${Date.now()}-${sanitizeFileName(f.name)}`;
-        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, f, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: f.type,
-        });
-        if (upErr) throw upErr;
-
-        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        if (!data?.publicUrl) throw new Error('Could not generate image URL');
-        uploaded.push(data.publicUrl);
+        // Upload directly to Cloudinary (no longer Supabase Storage).
+        const { url: publicUrl } = await uploadToCloudinary(f, 'product-images');
+        uploaded.push(publicUrl);
       }
       setImages((prev) => [...prev, ...uploaded].slice(0, MAX_IMAGES));
       toast({ title: 'Uploaded', description: 'Images uploaded successfully.' });

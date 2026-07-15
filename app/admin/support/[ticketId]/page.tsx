@@ -185,9 +185,12 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
 
       const withUrls = await Promise.all(
         (data || []).map(async (a: any) => {
+          if (a.file_path && String(a.file_path).startsWith('http')) {
+            return { ...a, url: a.file_path };
+          }
           const { data: signed } = await supabase.storage
             .from(BUCKET)
-            .createSignedUrl(a.file_path, 60 * 60); // 1 hour
+            .createSignedUrl(a.file_path, 60 * 60); // 1 hour (legacy Supabase attachments)
 
           return { ...a, url: signed?.signedUrl || null };
         })

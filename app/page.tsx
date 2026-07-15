@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import HomePageClient from '@/components/home/home-page-client';
-import { createServerSupabase } from '@/lib/supabase/server';
-import { isBuildTime } from '@/lib/isBuildTime';
+import { createServerSupabasePublicRead } from '@/lib/supabase/server';
 
-// Prevent streaming issues on Render — render fully server-side
-export const dynamic = 'force-dynamic';
+// Statically generate + cache the homepage (ISR). It is fully rendered at build
+// / revalidation time (no streaming — safe on Render) and, unlike force-dynamic,
+// the response is CDN-cacheable, so repeat visits are served instantly instead
+// of re-rendering + re-querying Supabase on every request. Catalog data
+// tolerates a few minutes of staleness.
+export const revalidate = 300;
 export const maxDuration = 60;
 
 export const metadata: Metadata = {
@@ -63,7 +66,9 @@ const EMPTY_HOME_DATA: HomeData = {
  */
 const getHomeData = unstable_cache(
   async (): Promise<HomeData> => {
-    const supabase = createServerSupabase();
+    // Cookie-less public read client so the homepage can be statically rendered
+    // (a cookie-bound client would force per-request dynamic rendering).
+    const supabase = createServerSupabasePublicRead();
 
     const [
       productsRes,
@@ -175,13 +180,14 @@ const getHomeData = unstable_cache(
 export default async function HomePage() {
   let data: HomeData = EMPTY_HOME_DATA;
 
-  if (!isBuildTime) {
-    try {
-      data = await getHomeData();
-    } catch (err) {
-      console.error('[home] render error:', err);
-      data = EMPTY_HOME_DATA;
-    }
+  // Fetch at build/revalidation so the statically generated homepage is fully
+  // populated (no empty first-paint). A transient failure falls back to an empty
+  // render and is retried on the next revalidation.
+  try {
+    data = await getHomeData();
+  } catch (err) {
+    console.error('[home] render error:', err);
+    data = EMPTY_HOME_DATA;
   }
 
   return (

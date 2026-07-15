@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
+import { uploadToCloudinary } from '@/lib/cloudinary/client';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -848,20 +849,8 @@ export default function InventoryPage() {
       const newOnes: string[] = [];
 
       for (const f of list) {
-        const fileName = sanitizeFileName(f.name) || `image-${Math.random().toString(16).slice(2)}.jpg`;
-        const path = `${prefix}/${fileName}`;
-
-        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, f, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: f.type,
-        });
-        if (upErr) throw upErr;
-
-        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        const publicUrl = data?.publicUrl;
-        if (!publicUrl) throw new Error('Could not create public URL (is bucket public?)');
-
+        // Upload directly to Cloudinary (no longer Supabase Storage).
+        const { url: publicUrl } = await uploadToCloudinary(f, 'product-images');
         newOnes.push(publicUrl);
       }
 
