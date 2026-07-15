@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": ">=18.17.0"
   },
   "scripts": {
     "dev": "next dev",
@@ -88,12 +88,12 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "eslint": "8.49.0",
-    "eslint-config-next": "13.5.1",
+    "eslint-config-next": "14.2.35",
     "framer-motion": "^10.12.2",
     "html2pdf.js": "^0.10.2",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
-    "next": "13.5.1",
+    "next": "14.2.35",
     "next-themes": "^0.3.0",
     "nodemailer": "^6.9.13",
     "postcss": "8.4.30",
