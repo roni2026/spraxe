@@ -1279,7 +1279,6 @@ const { toast } = useToast();
 
                               <Link
                                 href={`/products/${product.slug}`}
-                                prefetch={false}
                                 className="absolute inset-0 block"
                                 aria-label={`View ${product.name}`}
                               >
@@ -1303,7 +1302,6 @@ const { toast } = useToast();
                             <div className="p-3 flex flex-col flex-1">
                               <Link
                                 href={`/products/${product.slug}`}
-                                prefetch={false}
                                 className="flex-1"
                               >
                                 <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem] hover:text-blue-900 transition">
@@ -1363,7 +1361,6 @@ const { toast } = useToast();
                             <div className="h-20 w-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 relative">
                               <Link
                                 href={`/products/${product.slug}`}
-                                prefetch={false}
                                 className="absolute inset-0 block"
                                 aria-label={`View ${product.name}`}
                               >
@@ -1397,7 +1394,6 @@ const { toast } = useToast();
                             <div className="flex-1 min-w-0">
                               <Link
                                 href={`/products/${product.slug}`}
-                                prefetch={false}
                               >
                                 <div className="font-semibold text-gray-900 truncate hover:text-blue-900 transition">
                                   {highlightText(product.name, debouncedSearch)}

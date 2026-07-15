@@ -336,7 +336,7 @@ function ProductCard({
   return (
     <Card className="hover:shadow-md transition group">
       <CardContent className="p-0">
-        <Link href={`/products/${p.slug}`} prefetch={false} className="block aspect-square bg-gray-100 rounded-t-xl overflow-hidden relative" aria-label={`View ${p.name}`}>
+        <Link href={`/products/${p.slug}`} className="block aspect-square bg-gray-100 rounded-t-xl overflow-hidden relative" aria-label={`View ${p.name}`}>
           {pct > 0 && (
             <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase z-10">
               {pct}% OFF
@@ -384,7 +384,7 @@ function ProductCard({
         </Link>
 
         <div className="p-3">
-          <Link href={`/products/${p.slug}`} prefetch={false}>
+          <Link href={`/products/${p.slug}`}>
             <div className="text-sm font-semibold text-gray-900 line-clamp-2 hover:text-blue-900 transition min-h-[2.5rem]">
               {p.name}
             </div>
@@ -405,7 +405,7 @@ function ProductCard({
               <ShoppingCart className="mr-1 h-3 w-3" />
               {addingId === p.id ? '...' : 'Add'}
             </Button>
-            <Link href={`/products/${p.slug}`} prefetch={false} className="flex-shrink-0">
+            <Link href={`/products/${p.slug}`} className="flex-shrink-0">
               <Button variant="outline" size="sm" className="h-8 text-xs bg-white">
                 View
               </Button>
