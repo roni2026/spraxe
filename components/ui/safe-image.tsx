@@ -44,11 +44,31 @@ const CLOUDINARY_ENABLED = CLOUDINARY_CLOUD.length > 0;
 // full-bleed hero banners; the browser picks the smallest that fits.
 const CLOUDINARY_WIDTHS = [64, 96, 128, 160, 256, 384, 640, 828, 1080, 1280, 1600, 1920];
 
+// A native Cloudinary delivery URL already hosted in our account, e.g.
+// https://res.cloudinary.com/<cloud>/image/upload/v123/spraxe/...
+function isCloudinaryUploadUrl(src: string): boolean {
+  try {
+    const u = new URL(src);
+    return u.hostname === 'res.cloudinary.com' && u.pathname.includes('/image/upload/');
+  } catch {
+    return false;
+  }
+}
+
 function buildCloudinaryUrl(originalUrl: string, width?: number): string {
-  const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch`;
   const transforms = ['f_auto', 'q_auto', 'c_limit'];
   if (width && Number.isFinite(width)) transforms.push(`w_${Math.round(width)}`);
-  return `${base}/${transforms.join(',')}/${encodeURIComponent(originalUrl)}`;
+  const t = transforms.join(',');
+
+  // Images already uploaded to Cloudinary: inject the transformation segment
+  // right after `/image/upload/` (native delivery, no fetch round-trip).
+  if (isCloudinaryUploadUrl(originalUrl)) {
+    return originalUrl.replace('/image/upload/', `/image/upload/${t}/`);
+  }
+
+  // Any other remote URL (non-migrated, e.g. external blog cover): pull it in
+  // and optimize it via Cloudinary Fetch.
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/${t}/${encodeURIComponent(originalUrl)}`;
 }
 
 function buildCloudinarySrcSet(originalUrl: string): string {
@@ -229,7 +249,11 @@ export function SafeImage({
     //   failed, try the proxy.
     if (useCloudinary && (imgSrc.includes('res.cloudinary.com') || imgSrcSet)) {
       setImgSrcSet(undefined);
-      setImgSrc(isSupabaseUrl(normalized) ? normalized : toProxyUrl(normalized));
+      // If the source is already a Cloudinary upload URL, the un-transformed
+      // original is guaranteed valid. Supabase URLs load directly; anything
+      // else goes through our proxy.
+      if (isCloudinaryUploadUrl(normalized)) setImgSrc(normalized);
+      else setImgSrc(isSupabaseUrl(normalized) ? normalized : toProxyUrl(normalized));
       return;
     }
 
