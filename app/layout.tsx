@@ -111,6 +111,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <link rel="dns-prefetch" href={SUPABASE_ORIGIN} />
           </>
         ) : null}
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
       <body className="min-h-screen bg-white text-gray-900 antialiased font-sans overflow-x-hidden pb-14 md:pb-0">
         {/* Skip link for keyboard users */}

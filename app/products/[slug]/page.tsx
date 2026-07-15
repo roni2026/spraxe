@@ -2,9 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { unstable_cache } from 'next/cache';
 import ProductDetailClient from '@/components/products/product-detail-client';
-import { createServerSupabase, getSiteUrl } from '@/lib/supabase/server';
+import { createServerSupabasePublicRead, getSiteUrl } from '@/lib/supabase/server';
 
-export const revalidate = 60;
+// Pre-render every product at build / revalidation time and serve the HTML from
+// cache. This is what makes product navigation feel instant (no skeleton wait).
+export const revalidate = 300;
+export const dynamicParams = true;
 
 type ProductRow = {
   id: string;
@@ -26,6 +29,9 @@ type ProductRow = {
   color_group_id?: string | null;
   color_name?: string | null;
   color_hex?: string | null;
+  is_featured?: boolean | null;
+  total_sales?: number | null;
+  approval_status?: string | null;
 };
 
 type CategoryRow = {
@@ -53,9 +59,28 @@ type RelatedProductRow = {
 
 function tryCreateSupabase() {
   try {
-    return createServerSupabase();
+    // Cookie-less public client so product pages can be statically rendered.
+    return createServerSupabasePublicRead();
   } catch {
     return null;
+  }
+}
+
+export async function generateStaticParams() {
+  const supabase = tryCreateSupabase();
+  if (!supabase) return [];
+  try {
+    const { data } = await supabase
+      .from('products')
+      .select('slug')
+      .eq('is_active', true)
+      .limit(500);
+    return (data || [])
+      .map((p: { slug?: string | null }) => p.slug)
+      .filter((s: string | null | undefined): s is string => !!s)
+      .map((slug: string) => ({ slug }));
+  } catch {
+    return [];
   }
 }
 
@@ -65,7 +90,7 @@ async function fetchProductUncached(slug: string): Promise<ProductRow | null> {
   const res: { data: ProductRow | null; error: any } = await supabase
     .from('products')
     .select(
-      'id,category_id,name,slug,description,sku,images,price,base_price,retail_price,stock_quantity,unit,supplier_name,tags,is_active,size_chart,color_group_id,color_name,color_hex'
+      'id,category_id,name,slug,description,sku,images,price,base_price,retail_price,stock_quantity,unit,supplier_name,tags,is_active,size_chart,color_group_id,color_name,color_hex,is_featured,total_sales,approval_status'
     )
     .eq('slug', slug)
     .eq('is_active', true)
@@ -115,10 +140,13 @@ async function fetchRelatedProductsUncached(
   return (res.data || []) as RelatedProductRow[];
 }
 
-// ✅ Cache DB reads for faster slug pages + avoid duplicate queries
-const fetchProduct = unstable_cache(fetchProductUncached, ['product-by-slug'], { revalidate: 60 });
-const fetchCategoryChain = unstable_cache(fetchCategoryChainUncached, ['category-chain'], { revalidate: 60 });
-const fetchRelatedProducts = unstable_cache(fetchRelatedProductsUncached, ['related-products'], { revalidate: 60 });
+const fetchProduct = unstable_cache(fetchProductUncached, ['product-by-slug-v2'], { revalidate: 300 });
+const fetchCategoryChain = unstable_cache(fetchCategoryChainUncached, ['category-chain-v2'], {
+  revalidate: 300,
+});
+const fetchRelatedProducts = unstable_cache(fetchRelatedProductsUncached, ['related-products-v2'], {
+  revalidate: 300,
+});
 
 function firstImage(images: any): string | null {
   if (!images) return null;
@@ -141,124 +169,116 @@ function stripHtml(s: string) {
   return (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-export async function generateMetadata(
-  { params }: { params: { slug: string } }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
   const product = await fetchProduct(params.slug);
   if (!product) return { title: 'Product not found', robots: { index: false, follow: false } };
 
-  const img = firstImage(product.images) || '/og.png';
-  const description = stripHtml(String(product.description || '')).slice(0, 180) ||
-    'Shop quality products at great prices with fast delivery across Bangladesh.';
-
+  const img = firstImage(product.images);
+  const desc = stripHtml(String(product.description || '')).slice(0, 160);
   return {
     title: product.name,
-    description,
+    description: desc || `Buy ${product.name} at Spraxe Bangladesh.`,
     alternates: { canonical: `/products/${product.slug}` },
     openGraph: {
       title: product.name,
-      description,
-      url: `/products/${product.slug}`,
-      images: [{ url: img }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: product.name,
-      description,
-      images: [img],
+      description: desc || undefined,
+      images: img ? [{ url: img }] : undefined,
+      type: 'website',
     },
   };
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   try {
+    const product = await fetchProduct(params.slug);
+    if (!product) notFound();
 
-  const product = await fetchProduct(params.slug);
-  if (!product) return notFound();
+    const [categoryChain, related] = await Promise.all([
+      product.category_id ? fetchCategoryChain(product.category_id) : Promise.resolve([] as CategoryRow[]),
+      fetchRelatedProducts(product.category_id, product.id),
+    ]);
 
-  const [categoryChain, related] = await Promise.all([
-    product.category_id ? fetchCategoryChain(product.category_id) : Promise.resolve([]),
-    fetchRelatedProducts(product.category_id, product.id),
-  ]);
+    const url = `${getSiteUrl()}/products/${product.slug}`;
+    const img = firstImage(product.images);
+    const price = Number(product.price ?? product.base_price ?? 0);
+    const availability =
+      (product.stock_quantity ?? 0) > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock';
 
-  const siteUrl = getSiteUrl();
-  const url = `${siteUrl}/products/${product.slug}`;
-  const img = firstImage(product.images);
-  const price = Number(product.price ?? product.base_price ?? 0);
-  const availability = (product.stock_quantity ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: stripHtml(String(product.description || '')),
-    sku: product.sku || undefined,
-    image: img ? [img] : undefined,
-    brand: { '@type': 'Brand', name: 'Spraxe' },
-    offers: {
-      '@type': 'Offer',
-      url,
-      priceCurrency: 'BDT',
-      price: price ? String(price) : undefined,
-      availability,
-      itemCondition: 'https://schema.org/NewCondition',
-    },
-  };
-
-  const breadcrumbLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: `${getSiteUrl()}/` },
-      { '@type': 'ListItem', position: 2, name: 'Products', item: `${getSiteUrl()}/products` },
-      ...categoryChain.map((c, idx) => ({
-        '@type': 'ListItem',
-        position: 3 + idx,
-        name: c.name,
-        item: c.slug ? `${getSiteUrl()}/${encodeURIComponent(c.slug)}` : `${getSiteUrl()}/products`,
-      })),
-      {
-        '@type': 'ListItem',
-        position: 3 + categoryChain.length,
-        name: product.name,
-        item: `${getSiteUrl()}/products/${product.slug}`,
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: stripHtml(String(product.description || '')),
+      sku: product.sku || undefined,
+      image: img ? [img] : undefined,
+      brand: { '@type': 'Brand', name: 'Spraxe' },
+      offers: {
+        '@type': 'Offer',
+        url,
+        priceCurrency: 'BDT',
+        price: price ? String(price) : undefined,
+        availability,
+        itemCondition: 'https://schema.org/NewCondition',
       },
-    ],
-  };
+    };
 
+    const breadcrumbLd = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${getSiteUrl()}/` },
+        { '@type': 'ListItem', position: 2, name: 'Products', item: `${getSiteUrl()}/products` },
+        ...categoryChain.map((c, idx) => ({
+          '@type': 'ListItem',
+          position: 3 + idx,
+          name: c.name,
+          item: c.slug ? `${getSiteUrl()}/${encodeURIComponent(c.slug)}` : `${getSiteUrl()}/products`,
+        })),
+        {
+          '@type': 'ListItem',
+          position: 3 + categoryChain.length,
+          name: product.name,
+          item: `${getSiteUrl()}/products/${product.slug}`,
+        },
+      ],
+    };
 
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-      />
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        />
 
-      <ProductDetailClient
-        params={params}
-        initialProduct={product as any}
-        initialCategoryChain={categoryChain as any}
-        initialRelated={related as any}
-      />
-    </>
-  );
-
-} catch (e) {
-  console.error('[product-detail] server render failed', e);
-  // Render a simple not-found style UI to avoid crashing the stream.
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">Product unavailable</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        We couldn&apos;t load this product right now. Please try again.
-      </p>
-    </div>
-  );
-}
+        <ProductDetailClient
+          params={params}
+          initialProduct={product as any}
+          initialCategoryChain={categoryChain as any}
+          initialRelated={related as any}
+        />
+      </>
+    );
+  } catch (e) {
+    console.error('[product-detail] server render failed', e);
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <h1 className="text-2xl font-semibold">Product unavailable</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We couldn&apos;t load this product right now. Please try again.
+        </p>
+      </div>
+    );
+  }
 }

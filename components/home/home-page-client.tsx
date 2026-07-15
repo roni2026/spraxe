@@ -820,7 +820,7 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
       <Card className="group h-full overflow-hidden rounded-xl md:rounded-2xl border border-gray-200/80 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
         <CardContent className="p-0 flex flex-col h-full">
           <Link
-            href={`/products/${product.slug}`}
+            href={`/products/${product.slug}`} prefetch
             className="relative aspect-square bg-gray-50 overflow-hidden block"
             aria-label={`View ${(product as any)?.name}`}
           >
@@ -888,7 +888,7 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
           </Link>
 
           <div className="p-2 sm:p-2.5 md:p-4 flex flex-col flex-1 gap-1 md:gap-2">
-            <Link href={`/products/${product.slug}`} className="block">
+            <Link href={`/products/${product.slug}`} prefetch className="block">
               <h3 className="text-[11px] sm:text-[13px] md:text-[15px] font-semibold text-gray-900 line-clamp-2 min-h-[2.1rem] sm:min-h-[2.35rem] leading-snug transition group-hover:text-blue-900">
                 {product.name}
               </h3>

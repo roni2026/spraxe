@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SafeImage } from '@/components/ui/safe-image';
+import { preloadImages } from '@/lib/cloudinary/url';
 import { DEFAULT_SIZE_OPTIONS, parseSizeChart } from '@/lib/utils/size-chart';
 
 import {
@@ -336,7 +337,7 @@ function ProductCard({
   return (
     <Card className="hover:shadow-md transition group">
       <CardContent className="p-0">
-        <Link href={`/products/${p.slug}`} className="block aspect-square bg-gray-100 rounded-t-xl overflow-hidden relative" aria-label={`View ${p.name}`}>
+        <Link href={`/products/${p.slug}`} prefetch className="block aspect-square bg-gray-100 rounded-t-xl overflow-hidden relative" aria-label={`View ${p.name}`}>
           {pct > 0 && (
             <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase z-10">
               {pct}% OFF
@@ -384,7 +385,7 @@ function ProductCard({
         </Link>
 
         <div className="p-3">
-          <Link href={`/products/${p.slug}`}>
+          <Link href={`/products/${p.slug}`} prefetch>
             <div className="text-sm font-semibold text-gray-900 line-clamp-2 hover:text-blue-900 transition min-h-[2.5rem]">
               {p.name}
             </div>
@@ -405,7 +406,7 @@ function ProductCard({
               <ShoppingCart className="mr-1 h-3 w-3" />
               {addingId === p.id ? '...' : 'Add'}
             </Button>
-            <Link href={`/products/${p.slug}`} className="flex-shrink-0">
+            <Link href={`/products/${p.slug}`} prefetch className="flex-shrink-0">
               <Button variant="outline" size="sm" className="h-8 text-xs bg-white">
                 View
               </Button>
@@ -950,7 +951,7 @@ export default function ProductDetailClient({
   const [categoryChain, setCategoryChain] = useState<CategoryEx[]>(initialCategoryChain);
 
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(!initialProduct);
+  const [loading, setLoading] = useState(() => !(initialProduct && (initialProduct as any)?.slug === params.slug));
   const [adding, setAdding] = useState(false);
 
   const [activeImage, setActiveImage] = useState(0);
@@ -1068,6 +1069,18 @@ export default function ProductDetailClient({
   const imgs = useMemo(() => parseImages((product as any)?.images), [product]);
   const mainImg = imgs[activeImage] || imgs[0];
 
+  // Reset gallery index when navigating between products (client transition).
+  useEffect(() => {
+    setActiveImage(0);
+  }, [(product as any)?.id]);
+
+  // Preload every gallery image at a display-ready width so thumbnail clicks
+  // swap instantly from browser cache (no spinner / blank flash).
+  useEffect(() => {
+    if (!imgs.length) return;
+    preloadImages(imgs, 828);
+  }, [imgs]);
+
   const price = Number((product as any)?.price ?? (product as any)?.base_price ?? 0);
   const retail = Number((product as any)?.retail_price ?? 0);
   const pct = percentOff(retail, price);
@@ -1086,16 +1099,19 @@ export default function ProductDetailClient({
   const descriptionSnippet = stripHtml(descriptionRaw);
 
   useEffect(() => {
-    // If the server already provided initial data for this slug, don't refetch immediately.
+    // Server-provided product data (static/ISR page) — paint immediately, no skeleton.
     if (initialProduct && (initialProduct as any)?.slug === params.slug) {
       setProduct(initialProduct as any);
       setCategoryChain(initialCategoryChain as any);
       setRelated(initialRelated as any);
       setLoading(false);
       setErrorMsg(null);
+      setActiveImage(0);
       return;
     }
 
+    // Soft client navigation without server payload — fetch, but keep previous
+    // product on screen when possible to avoid a full-page skeleton flash.
     void fetchAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.slug]);
@@ -1305,11 +1321,9 @@ export default function ProductDetailClient({
 
   // ✅ FIXED + MERGED fetchAll (calls fetchCategoryChain correctly)
   const fetchAll = async () => {
-    setLoading(true);
+    // Only show the full skeleton if we have nothing to display yet.
+    setLoading((prev) => (product ? false : true));
     setErrorMsg(null);
-    setProduct(null);
-    setCategoryChain([]);
-    setRelated([]);
     setAlsoLike([]);
     setRecentlyViewed([]);
     setActiveImage(0);
@@ -1761,6 +1775,7 @@ export default function ProductDetailClient({
                   {mainImg ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <SafeImage
+                      key={mainImg}
                       src={mainImg}
                       alt={product.name}
                       fill
@@ -1768,6 +1783,8 @@ export default function ProductDetailClient({
                       // LCP image: load immediately at high priority instead of lazily.
                       loading="eager"
                       fetchPriority="high"
+                      // Prefer sync decode when the image is already preloaded in cache.
+                      decoding="sync"
                       className={`object-contain transition-transform duration-200 ease-out ${zoomed ? 'scale-150' : 'scale-100'} cursor-zoom-in`}
                       style={{ transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%` }}
                     />
@@ -1862,6 +1879,8 @@ export default function ProductDetailClient({
                           <button
                             key={img + idx}
                             onClick={() => setActiveImage(idx)}
+                            onMouseEnter={() => preloadImages([img], 828)}
+                            onTouchStart={() => preloadImages([img], 828)}
                             className={`relative h-20 w-20 ${isFashionLayout ? 'rounded-md' : 'rounded-xl'} overflow-hidden border transition ${
                               idx === activeImage
                                 ? 'border-blue-700 ring-2 ring-blue-600/20'

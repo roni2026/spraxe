@@ -11,7 +11,7 @@ import {
 } from '@/lib/listing-data.server';
 
 // Cache category listings briefly for speed while still staying fresh.
-export const revalidate = 60;
+export const revalidate = 300;
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

@@ -10,7 +10,7 @@ import {
 
 // Cache listings briefly for speed while still staying fresh.
 // Public Supabase reads don't depend on user-specific cookies.
-export const revalidate = 60;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'All Products',
