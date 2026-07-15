@@ -210,6 +210,9 @@ export function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const mobileSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  // Auto-hide the sticky header when scrolling down; reveal it on scroll up so
+  // the nav is reachable without scrolling all the way to the top.
+  const [hideHeader, setHideHeader] = useState(false);
 
   // Close drawer when route changes
   useEffect(() => {
@@ -219,24 +222,38 @@ export function Header() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Keep header shadow responsive without animating layout-heavy rows.
+  // Header shadow + auto-hide on scroll direction (reveal on scroll up).
   useEffect(() => {
     let ticking = false;
-    let lastY = 0;
+    let lastY = window.scrollY || 0;
     let lastScrolled = false;
+    let lastHidden = false;
 
     const update = () => {
       ticking = false;
-      const y = lastY;
+      const y = Math.max(0, window.scrollY || 0);
+
       const nextScrolled = y > 8;
       if (nextScrolled !== lastScrolled) {
         lastScrolled = nextScrolled;
         setIsScrolled(nextScrolled);
       }
+
+      const delta = y - lastY;
+      // Ignore tiny jitters; require a small deliberate movement.
+      if (Math.abs(delta) > 6) {
+        // Hide only when scrolling down past the header area; any upward
+        // scroll (even a little) reveals it again.
+        const nextHidden = delta > 0 && y > 120;
+        if (nextHidden !== lastHidden) {
+          lastHidden = nextHidden;
+          setHideHeader(nextHidden);
+        }
+        lastY = y;
+      }
     };
 
     const onScroll = () => {
-      lastY = window.scrollY || 0;
       if (!ticking) {
         ticking = true;
         window.requestAnimationFrame(update);
@@ -320,7 +337,9 @@ export function Header() {
 
       {/* Main header */}
       <header
-        className={`sticky top-0 z-40 border-b border-gray-200 bg-white md:bg-white/90 md:backdrop-blur md:supports-[backdrop-filter]:bg-white/70 ${isScrolled ? 'shadow-sm' : ''}`}
+        className={`sticky top-0 z-40 border-b border-gray-200 bg-white md:bg-white/90 md:backdrop-blur md:supports-[backdrop-filter]:bg-white/70 transition-transform duration-300 will-change-transform ${
+          hideHeader && !mobileSearchOpen && !suggestOpen && !categorySidebarOpen ? '-translate-y-full' : 'translate-y-0'
+        } ${isScrolled ? 'shadow-sm' : ''}`}
       >
         <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 relative">
           {/* Slightly taller header so the brand mark can be clearly visible */}

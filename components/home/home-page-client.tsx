@@ -690,9 +690,12 @@ export default function HomePageClient({
   };
 
   const onCategoryClick = async (cat: Category) => {
-    // If already expanded, just scroll (no toggle-close)
+    // Toggle: clicking the already-open category closes it, so users don't have
+    // to scroll down to the "Close" button to collapse it.
     if (expandedCategory?.id === cat.id) {
-      expandedSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setExpandedCategory(null);
+      setExpandedProducts([]);
+      setExpandedBrand('All brand');
       return;
     }
 
@@ -1007,8 +1010,8 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
 
                 {heroFeaturedImages.length > 1 ? (
                   <>
-                    <CarouselPrevious className="left-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 h-7 w-7 md:h-9 md:w-9" />
-                    <CarouselNext className="right-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 h-7 w-7 md:h-9 md:w-9" />
+                    <CarouselPrevious className="hidden md:flex left-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 md:h-9 md:w-9" />
+                    <CarouselNext className="hidden md:flex right-2 bg-white/90 hover:bg-white border border-gray-200 shadow-sm text-gray-900 md:h-9 md:w-9" />
                   </>
                 ) : null}
 

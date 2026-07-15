@@ -126,9 +126,11 @@ export default function TrackOrderClient({
           </p>
         </div>
 
-        <Link href="/" className="inline-flex items-center gap-2 text-sm text-blue-700 hover:underline">
-          <ArrowLeft className="h-4 w-4" />
-          Back to shop
+        <Link href="/" className="shrink-0">
+          <Button variant="outline" size="sm" className="h-9 gap-2 bg-white">
+            <ArrowLeft className="h-4 w-4" />
+            Back to shop
+          </Button>
         </Link>
       </div>
 

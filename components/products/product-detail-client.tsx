@@ -1895,7 +1895,7 @@ export default function ProductDetailClient({
             {/* Sticky buy box */}
             <aside className="lg:col-span-5">
               <div className="lg:sticky lg:top-24 space-y-2 sm:space-y-4">
-                <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6' : 'bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-6'}>
+                <div className={isFashionLayout ? 'bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-5' : 'bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sm:p-5'}>
                   {/* Status pills */}
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs sm:text-sm font-bold ${outOfStock ? 'bg-red-600 text-white' : 'bg-blue-900 text-white'}`}>
@@ -1913,15 +1913,15 @@ export default function ProductDetailClient({
                     )}
                   </div>
 
-                  <h1 className="mt-2.5 text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                  <h1 className="mt-2 text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight leading-tight">
                     {product.name}
                   </h1>
 
                   {/* Rating */}
-                  <div className="mt-1.5 flex items-center gap-2">
+                  <div className="mt-1 flex items-center gap-2">
                     <div className="flex items-center gap-0.5 text-yellow-500">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <Star key={n} className={`h-4 w-4 sm:h-5 sm:w-5 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : 'text-gray-300'}`} />
+                        <Star key={n} className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${n <= Math.round(reviewAvg || 0) ? 'fill-yellow-500' : 'text-gray-300'}`} />
                       ))}
                     </div>
                     {reviewCount > 0 ? (
@@ -1935,8 +1935,8 @@ export default function ProductDetailClient({
                   </div>
 
                   {/* Price */}
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <div className="text-3xl font-extrabold text-gray-900 leading-none">{moneyBDT(price)}</div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-none">{moneyBDT(price)}</div>
                     {retail > 0 && retail > price && (
                       <>
                         <div className="text-base sm:text-lg text-red-500 line-through font-semibold">{moneyBDT(retail)}</div>
@@ -2036,7 +2036,7 @@ export default function ProductDetailClient({
                     </div>
                   )}
 
-                  <Separator className="my-3 sm:my-5" />
+                  <Separator className="my-2.5 sm:my-4" />
 
                   <div className="space-y-3">
                     {/* Quantity */}
@@ -2078,12 +2078,12 @@ export default function ProductDetailClient({
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-4 space-y-2.5">
+                  <div className="mt-3 space-y-2">
                     <Button
                       variant="outline"
                       onClick={handleAddToCart}
                       disabled={adding || outOfStock || (isClothing && !selectedSize)}
-                      className="w-full h-12 rounded-xl border-gray-300 bg-white text-gray-900 font-bold text-base hover:bg-gray-50"
+                      className="w-full h-11 rounded-xl border-gray-300 bg-white text-gray-900 font-bold text-base hover:bg-gray-50"
                       type="button"
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
@@ -2093,7 +2093,7 @@ export default function ProductDetailClient({
                     <Button
                       onClick={handleBuyNow}
                       disabled={adding || outOfStock || (isClothing && !selectedSize)}
-                      className="w-full bg-blue-900 hover:bg-blue-800 h-12 rounded-xl text-base font-extrabold text-white"
+                      className="w-full bg-blue-900 hover:bg-blue-800 h-11 rounded-xl text-base font-extrabold text-white"
                     >
                       <CreditCard className="mr-2 h-5 w-5" />
                       {adding ? 'Adding...' : 'Buy Now'}
