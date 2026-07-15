@@ -1074,11 +1074,20 @@ export default function ProductDetailClient({
     setActiveImage(0);
   }, [(product as any)?.id]);
 
-  // Preload every gallery image at a display-ready width so thumbnail clicks
-  // swap instantly from browser cache (no spinner / blank flash).
+  // Preload every gallery image so thumbnail switches are cache hits.
+  // Warm immediately, then again on idle for any remaining network work.
   useEffect(() => {
     if (!imgs.length) return;
     preloadImages(imgs, 828);
+    const ric = (window as any).requestIdleCallback as undefined | ((cb: () => void) => number);
+    const id = ric ? ric(() => preloadImages(imgs, 828)) : window.setTimeout(() => preloadImages(imgs, 828), 120);
+    return () => {
+      if (ric && typeof (window as any).cancelIdleCallback === 'function') {
+        (window as any).cancelIdleCallback(id);
+      } else {
+        window.clearTimeout(id as number);
+      }
+    };
   }, [imgs]);
 
   const price = Number((product as any)?.price ?? (product as any)?.base_price ?? 0);
@@ -1727,28 +1736,33 @@ export default function ProductDetailClient({
 
       <main className="flex-1">
         <div className={isFashionLayout ? 'container mx-auto px-4 py-6 lg:py-8' : 'container mx-auto px-4 py-6 lg:py-10'}>
-          <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-5 overflow-x-auto whitespace-nowrap pb-2">
-            <Link href="/" className="inline-flex items-center gap-1 hover:text-blue-900 shrink-0">
-              <Home className="w-4 h-4" />
-              <span>Home</span>
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-sm text-gray-500 mb-5 overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            <Link href="/" className="inline-flex items-center gap-1 leading-none hover:text-blue-900 shrink-0">
+              <Home className="w-3.5 h-3.5 shrink-0" />
+              <span className="leading-none">Home</span>
             </Link>
 
-            <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
-            <Link href="/products" className="hover:text-blue-900 shrink-0">
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0 self-center" aria-hidden />
+            <Link href="/products" className="inline-flex items-center leading-none hover:text-blue-900 shrink-0">
               Products
             </Link>
 
             {categoryChain.map((cat) => (
-              <div key={cat.id} className="flex items-center gap-1.5 shrink-0">
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-                <Link href={`/${cat.slug}`} className="hover:text-blue-900 font-medium">
+              <span key={cat.id} className="inline-flex items-center gap-1.5 shrink-0">
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0 self-center" aria-hidden />
+                <Link href={`/${cat.slug}`} className="inline-flex items-center leading-none hover:text-blue-900 font-medium">
                   {cat.name}
                 </Link>
-              </div>
+              </span>
             ))}
 
-            <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
-            <span className="text-gray-900 font-semibold truncate max-w-[240px]">{product.name}</span>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0 self-center" aria-hidden />
+            <span className="inline-flex items-center leading-none text-gray-900 font-semibold truncate max-w-[240px]">
+              {product.name}
+            </span>
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -1772,22 +1786,27 @@ export default function ProductDetailClient({
                       });
                     }}
                   >
-                  {mainImg ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <SafeImage
-                      key={mainImg}
-                      src={mainImg}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      // LCP image: load immediately at high priority instead of lazily.
-                      loading="eager"
-                      fetchPriority="high"
-                      // Prefer sync decode when the image is already preloaded in cache.
-                      decoding="sync"
-                      className={`object-contain transition-transform duration-200 ease-out ${zoomed ? 'scale-150' : 'scale-100'} cursor-zoom-in`}
-                      style={{ transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%` }}
-                    />
+                  {imgs.length > 0 ? (
+                    // Stack every gallery image and toggle via opacity. Combined with
+                    // preloadImages(), this makes thumbnail switches feel instant —
+                    // no remount, no blank frame, no re-decode of a new <img>.
+                    imgs.map((img, idx) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <SafeImage
+                        key={img + idx}
+                        src={img}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        loading={idx === 0 ? 'eager' : 'eager'}
+                        fetchPriority={idx === activeImage ? 'high' : 'low'}
+                        decoding="async"
+                        className={`object-contain transition-[opacity,transform] duration-150 ease-out cursor-zoom-in ${
+                          idx === activeImage ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        } ${zoomed && idx === activeImage ? 'scale-150' : 'scale-100'}`}
+                        style={{ transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%` }}
+                      />
+                    ))
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Package className="w-16 h-16 text-gray-300" />

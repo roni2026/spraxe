@@ -1110,218 +1110,134 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
         </section>
       )}
 
-      {/* Categories */}
-      <section className="relative py-5 md:py-10">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-24 right-[-6rem] h-80 w-80 rounded-full bg-blue-200/25 blur-3xl" />
-          <div className="absolute -bottom-28 left-[-7rem] h-96 w-96 rounded-full bg-orange-200/20 blur-3xl" />
-        </div>
-
+      {/* Categories — clean professional grid/slider */}
+      <section className="py-5 md:py-8 bg-gray-50/70 border-y border-gray-100">
         <div className="w-full max-w-7xl mx-auto px-3 md:px-4">
-          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-white shadow-[0_18px_60px_-44px_rgba(15,23,42,0.45)] px-3 py-3 md:px-6 md:py-6">
-            <div className="pointer-events-none absolute inset-0 opacity-80 bg-[radial-gradient(1000px_circle_at_10%_0%,rgba(59,130,246,0.10),transparent_55%),radial-gradient(900px_circle_at_90%_10%,rgba(249,115,22,0.08),transparent_55%),radial-gradient(900px_circle_at_60%_100%,rgba(16,185,129,0.06),transparent_60%)]" />
-            <div className="relative">
-              <div className="flex items-center justify-between gap-3 mb-3 md:mb-4">
-                <h2 className="font-heading text-base md:text-2xl font-bold tracking-tight text-gray-900">
-                  Shop by Category
-                </h2>
+          <div className="flex items-end justify-between gap-3 mb-4 md:mb-5">
+            <div>
+              <h2 className="font-heading text-base md:text-2xl font-bold tracking-tight text-gray-900">
+                Shop by Category
+              </h2>
+              <p className="mt-0.5 text-xs md:text-sm text-gray-500">Browse our most popular collections</p>
+            </div>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-0.5 text-xs md:text-sm font-semibold text-blue-900 hover:text-blue-700 shrink-0"
+            >
+              See all <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            </Link>
+          </div>
 
-                <Link
-                  href="/products"
-                  className="text-xs md:text-sm font-semibold text-blue-800 hover:text-orange-700 hover:underline flex items-center shrink-0"
-                >
-                  See all <ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-0.5" />
-                </Link>
+          {loading ? (
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="rounded-2xl border border-gray-100 bg-white p-2 md:p-3">
+                  <Skeleton className="aspect-square w-full rounded-xl" />
+                  <Skeleton className="mt-2 h-3 w-4/5 mx-auto rounded" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Mobile: horizontal snap row */}
+              <div className="md:hidden -mx-3 px-3 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex gap-2.5 min-w-max pb-1">
+                  {categories.map((cat) => {
+                    const isActive = expandedCategory?.id === cat.id;
+                    const isBusy = expandedLoading && isActive;
+                    return (
+                      <button
+                        key={(cat as any).id}
+                        type="button"
+                        aria-disabled={isBusy}
+                        onClick={() => void onCategoryClick(cat)}
+                        className={`group w-[4.75rem] shrink-0 text-center touch-manipulation select-none ${
+                          isBusy ? 'opacity-70' : ''
+                        }`}
+                        aria-label={`Expand ${(cat as any).name} products`}
+                      >
+                        <div
+                          className={`relative mx-auto flex h-[4.75rem] w-[4.75rem] items-center justify-center overflow-hidden rounded-2xl border bg-white p-2.5 transition ${
+                            isActive
+                              ? 'border-blue-900 shadow-md ring-2 ring-blue-900/10'
+                              : 'border-gray-200 shadow-sm group-active:scale-[0.98] group-hover:border-blue-300 group-hover:shadow'
+                          }`}
+                        >
+                          {(cat as any).image_url ? (
+                            <div className="relative h-full w-full">
+                              <SafeImage
+                                src={(cat as any).image_url}
+                                alt={(cat as any).name}
+                                fill
+                                sizes="76px"
+                                className="object-contain object-center"
+                              />
+                            </div>
+                          ) : (
+                            <Package className="h-7 w-7 text-gray-300" />
+                          )}
+                        </div>
+                        <span
+                          className={`mt-1.5 block text-[11px] font-medium leading-tight line-clamp-2 px-0.5 ${
+                            isActive ? 'text-blue-900' : 'text-gray-800'
+                          }`}
+                        >
+                          {(cat as any).name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {loading ? (
-                <div className="flex gap-4 overflow-hidden py-1">
-                  {[...Array(8)].map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-16 md:h-24 md:w-24 rounded-full flex-shrink-0" />
-                  ))}
-                </div>
-              ) : (
-                <>
-                  {/* Mobile: slider (4 categories per view) */}
-                  <div className="md:hidden relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white/90 to-transparent rounded-l-[22px]" />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white/90 to-transparent rounded-r-[22px]" />
-                    <Carousel opts={{ align: 'start', dragFree: true, containScroll: 'trimSnaps' }} className="w-full">
-                      <CarouselContent className="-ml-2">
-                        {categories.map((cat) => {
-                          const isActive = expandedCategory?.id === cat.id;
-                          const isBusy = expandedLoading && isActive;
-
-                          return (
-                            <CarouselItem key={(cat as any).id} className="pl-2 basis-1/4">
-                              <button
-                                type="button"
-                                aria-disabled={isBusy}
-                                onClick={() => void onCategoryClick(cat)}
-                                className={`group block text-center w-full touch-manipulation select-none ${
-                                  isBusy ? 'opacity-85' : ''
-                                }`}
-                                aria-label={`Expand ${(cat as any).name} products`}
-                              >
-                                <div className="flex flex-col items-center gap-1.5">
-                                  <div className="relative">
-                                    <span
-                                      className={`absolute -inset-2 rounded-full bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.18),transparent_60%),radial-gradient(circle_at_bottom,rgba(59,130,246,0.16),transparent_55%)] blur-md transition-opacity ${
-                                        isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                                      }`}
-                                    />
-                                    <div
-                                      className={`relative rounded-full p-0 transition-all ${
-                                        isActive
-                                          ? 'shadow-lg -translate-y-0.5'
-                                          : 'group-hover:shadow-lg group-hover:-translate-y-0.5'
-                                      }`}
-                                    >
-                                      <div
-                                        className={`relative w-16 h-16 rounded-full overflow-hidden bg-white shadow-sm transition-all ${
-                                          isActive ? 'shadow-md' : 'group-hover:shadow-md'
-                                        }`}
-                                      >
-                                        <span
-                                          className={`pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.92),rgba(255,255,255,0.35),transparent_70%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.14),transparent_60%),radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.10),transparent_60%)] ${
-                                            isActive ? 'opacity-100' : 'opacity-80'
-                                          }`}
-                                        />
-                                        {(cat as any).image_url ? (
-                                          <div className="relative w-full h-full p-2.5">
-                                            <SafeImage
-                                              src={(cat as any).image_url}
-                                              alt={(cat as any).name}
-                                              fill
-                                              sizes="64px"
-                                              className="object-contain object-center group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                          </div>
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center">
-                                            <Package className="w-6 h-6 text-gray-300" />
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <span
-                                    className={`text-[11px] font-medium leading-tight line-clamp-2 px-0.5 ${
-                                      isActive ? 'text-blue-900' : 'text-gray-900 group-hover:text-blue-800'
-                                    }`}
-                                  >
-                                    {(cat as any).name}
-                                  </span>
-                                </div>
-                              </button>
-                            </CarouselItem>
-                          );
-                        })}
-                      </CarouselContent>
-
-                      {categories.length > 4 ? (
-                        <>
-                          <CarouselPrevious className="left-1 top-8 -translate-y-1/2 z-20 h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 disabled:pointer-events-none disabled:opacity-0 transition" />
-                          <CarouselNext className="right-1 top-8 -translate-y-1/2 z-20 h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 disabled:pointer-events-none disabled:opacity-0 transition" />
-                        </>
-                      ) : null}
-                    </Carousel>
-                  </div>
-
-                  {/* Desktop: carousel */}
-                  <div className="hidden md:block relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white/90 to-transparent rounded-l-[22px]" />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white/90 to-transparent rounded-r-[22px]" />
-                    <Carousel opts={{ align: 'start', dragFree: true, containScroll: 'trimSnaps' }} className="w-full">
-                      <CarouselContent className="-ml-3">
-                        {categories.map((cat) => {
-                          const isActive = expandedCategory?.id === cat.id;
-                          const isBusy = expandedLoading && isActive;
-
-                          return (
-                            <CarouselItem
-                              key={(cat as any).id}
-                              className="pl-3 basis-[28%] sm:basis-[20%] md:basis-[14%] lg:basis-[10%]"
-                            >
-                              <button
-                                type="button"
-                                aria-disabled={isBusy}
-                                onClick={() => void onCategoryClick(cat)}
-                                className={`group block text-center w-full touch-manipulation select-none ${
-                                  isBusy ? 'opacity-85' : ''
-                                }`}
-                                aria-label={`Expand ${(cat as any).name} products`}
-                              >
-                                <div className="flex flex-col items-center gap-2">
-                                  <div className="relative">
-                                    <span
-                                      className={`absolute -inset-2 rounded-full bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.18),transparent_60%),radial-gradient(circle_at_bottom,rgba(59,130,246,0.16),transparent_55%)] blur-md transition-opacity ${
-                                        isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                                      }`}
-                                    />
-                                    <div
-                                      className={`relative rounded-full p-0 transition-all ${
-                                        isActive
-                                          ? 'shadow-lg -translate-y-0.5'
-                                          : 'group-hover:shadow-lg group-hover:-translate-y-0.5'
-                                      }`}
-                                    >
-                                      <div
-                                        className={`relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-white shadow-sm transition-all ${
-                                          isActive ? 'shadow-md' : 'group-hover:shadow-md'
-                                        }`}
-                                      >
-                                        <span
-                                          className={`pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.92),rgba(255,255,255,0.35),transparent_70%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.14),transparent_60%),radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.10),transparent_60%)] ${
-                                            isActive ? 'opacity-100' : 'opacity-80'
-                                          }`}
-                                        />
-                                      {(cat as any).image_url ? (
-                                        <div className="relative w-full h-full p-3 md:p-3.5">
-                                          <SafeImage
-                                            src={(cat as any).image_url}
-                                            alt={(cat as any).name}
-                                            fill
-                                            sizes="96px"
-                                            className="object-contain object-center group-hover:scale-105 transition-transform duration-300"
-                                          />
-                                        </div>
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                          <Package className="w-8 h-8 text-gray-300" />
-                                        </div>
-                                      )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <span
-                                    className={`text-xs md:text-sm font-medium leading-tight line-clamp-2 px-1 ${
-                                      isActive ? 'text-blue-900' : 'text-gray-900 group-hover:text-blue-800'
-                                    }`}
-                                  >
-                                    {(cat as any).name}
-                                  </span>
-                                  <span
-                                    className={`h-1 w-8 rounded-full transition-opacity ${
-                                      isActive ? 'opacity-100 bg-gradient-to-r from-blue-600 via-orange-500 to-emerald-600' : 'opacity-0'
-                                    }`}
-                                  />
-                                </div>
-                              </button>
-                            </CarouselItem>
-                          );
-                        })}
-                      </CarouselContent>
-
-                      <CarouselPrevious className="left-0 top-12 -translate-y-1/2 z-20 h-10 w-10 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 hover:shadow-lg disabled:pointer-events-none disabled:opacity-0 transition" />
-                      <CarouselNext className="right-0 top-12 -translate-y-1/2 z-20 h-10 w-10 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 hover:shadow-lg disabled:pointer-events-none disabled:opacity-0 transition" />
-                    </Carousel>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+              {/* Desktop / tablet: responsive grid */}
+              <div className="hidden md:grid grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3">
+                {categories.map((cat) => {
+                  const isActive = expandedCategory?.id === cat.id;
+                  const isBusy = expandedLoading && isActive;
+                  return (
+                    <button
+                      key={(cat as any).id}
+                      type="button"
+                      aria-disabled={isBusy}
+                      onClick={() => void onCategoryClick(cat)}
+                      className={`group text-center touch-manipulation select-none ${isBusy ? 'opacity-70' : ''}`}
+                      aria-label={`Expand ${(cat as any).name} products`}
+                    >
+                      <div
+                        className={`relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border bg-white p-3 transition ${
+                          isActive
+                            ? 'border-blue-900 shadow-md ring-2 ring-blue-900/10'
+                            : 'border-gray-200 shadow-sm group-hover:-translate-y-0.5 group-hover:border-blue-300 group-hover:shadow-md'
+                        }`}
+                      >
+                        {(cat as any).image_url ? (
+                          <div className="relative h-full w-full">
+                            <SafeImage
+                              src={(cat as any).image_url}
+                              alt={(cat as any).name}
+                              fill
+                              sizes="120px"
+                              className="object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                        ) : (
+                          <Package className="h-9 w-9 text-gray-300" />
+                        )}
+                      </div>
+                      <span
+                        className={`mt-2 block text-sm font-medium leading-snug line-clamp-2 ${
+                          isActive ? 'text-blue-900' : 'text-gray-900 group-hover:text-blue-900'
+                        }`}
+                      >
+                        {(cat as any).name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
 

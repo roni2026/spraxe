@@ -51,19 +51,41 @@ export function buildCloudinarySrcSet(originalUrl: string, widths: number[]): st
   return widths.map((w) => `${buildCloudinaryUrl(originalUrl, w)} ${w}w`).join(', ');
 }
 
-/** Decode-friendly preload for a list of image URLs (browser only). */
+/**
+ * Preload gallery images for instant thumbnail switches.
+ *
+ * Important: SafeImage often renders a base src WITHOUT an explicit width (when
+ * using fill + sizes), so we preload that exact URL as well as common display
+ * widths. Matching the cache key is what makes the swap feel instant.
+ */
 export function preloadImages(urls: string[], width = 828): void {
   if (typeof window === 'undefined') return;
   const seen = new Set<string>();
-  for (const raw of urls) {
-    if (!raw || seen.has(raw)) continue;
-    seen.add(raw);
+
+  const warm = (src: string) => {
+    if (!src || seen.has(src)) return;
+    seen.add(src);
     try {
       const img = new window.Image();
       img.decoding = 'async';
-      img.src = buildCloudinaryUrl(raw, width);
+      // fetchPriority is supported in modern browsers; ignore if not.
+      try {
+        (img as any).fetchPriority = 'low';
+      } catch {}
+      img.src = src;
     } catch {
       // ignore
     }
+  };
+
+  for (const raw of urls) {
+    if (!raw) continue;
+    // Exact base URL SafeImage uses when no width prop is passed (fill + sizes).
+    warm(buildCloudinaryUrl(raw));
+    // Display-size derivative for main gallery.
+    warm(buildCloudinaryUrl(raw, width));
+    // Common responsive candidates used by srcSet.
+    warm(buildCloudinaryUrl(raw, 512));
+    warm(buildCloudinaryUrl(raw, 1280));
   }
 }
