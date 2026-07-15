@@ -1,7 +1,7 @@
 // app/layout.tsx
 
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Suspense } from 'react';
 import { AuthProvider } from '@/lib/auth/auth-context';
@@ -84,9 +84,16 @@ export async function generateMetadata(): Promise<Metadata> {
       other: [{ rel: 'mask-icon', url: '/favicon.ico' }],
     },
     manifest: '/site.webmanifest',
-    themeColor: '#0b1f4a',
   };
 }
+
+// Next.js 14+ requires themeColor (and viewport settings) to live in a
+// dedicated `viewport` export instead of `metadata`.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#0b1f4a',
+};
 
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

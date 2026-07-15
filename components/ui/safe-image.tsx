@@ -81,7 +81,10 @@ export function SafeImage({
   alt,
   fill,
   className,
-  preferNextImageForRemote = false,
+  // Default ON: allowlisted remote images (Supabase storage, Pexels) are routed
+  // through next/image so they get automatically resized + compressed to
+  // AVIF/WebP. Non-allowlisted hosts still fall back to the raw <img> proxy path.
+  preferNextImageForRemote = true,
   ...rest
 }: SafeImageProps) {
   const normalized = React.useMemo(() => normalizeRemoteSrc(String(src ?? '')), [src]);

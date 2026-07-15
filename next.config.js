@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 
+// Image optimization is ON by default (recommended): Next resizes + serves
+// AVIF/WebP, which is a huge win for an image-heavy storefront. It can be
+// explicitly disabled per-environment with DISABLE_IMAGE_OPTIMIZATION=1 if a
+// host has tight memory limits.
 const disableImageOptimization =
-  process.env.RENDER === 'true' ||
   process.env.DISABLE_IMAGE_OPTIMIZATION === '1';
 
 // Automatically allow the current Supabase project host for Next/Image.

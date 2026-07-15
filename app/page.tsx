@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import HomePageClient from '@/components/home/home-page-client';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { isBuildTime } from '@/lib/isBuildTime';
@@ -27,41 +28,51 @@ const TARGET_CATEGORIES = [
   "Home Decor & Textile",
 ];
 
-export default async function HomePage() {
-  if (isBuildTime) {
-    return (
-      <HomePageClient
-        initialProducts={[]}
-        initialNewArrivals={[]}
-        initialCategories={[]}
-        initialFeaturedImages={[]}
-        initialBestSellers={[]}
-        initialBestSellerSoldMap={{}}
-        initialHomeMidBanner={null}
-      />
-    );
-  }
+type HomeData = {
+  featuredProducts: any[];
+  newArrivals: any[];
+  categories: any[];
+  featuredImages: any[];
+  bestSellers: any[];
+  soldMap: Record<string, number>;
+  homeMidBanner: any;
+};
 
-  let supabase: ReturnType<typeof createServerSupabase>;
-  try {
-    supabase = createServerSupabase();
-  } catch (e) {
-    console.error('[home] supabase not configured', e);
-    return (
-      <HomePageClient
-        initialProducts={[]}
-        initialNewArrivals={[]}
-        initialCategories={[]}
-        initialFeaturedImages={[]}
-        initialBestSellers={[]}
-        initialBestSellerSoldMap={{}}
-        initialHomeMidBanner={null}
-      />
-    );
-  }
+const EMPTY_HOME_DATA: HomeData = {
+  featuredProducts: [],
+  newArrivals: [],
+  categories: [],
+  featuredImages: [],
+  bestSellers: [],
+  soldMap: {},
+  homeMidBanner: null,
+};
 
-  try {
-    const [productsRes, categoriesRes, featuredRes, newArrivalsRes, bannerRes] = await Promise.all([
+/**
+ * Fetch all homepage data in one shot.
+ *
+ * Performance:
+ * - Every independent query (products, categories, featured images, new
+ *   arrivals, mid banner AND best sellers) runs in a single Promise.all so we
+ *   pay one network round-trip window instead of several sequential ones.
+ * - The whole result is memoized via unstable_cache with a short revalidate
+ *   window, so repeated homepage requests are served from the Next data cache
+ *   instead of hammering Supabase on every hit. Public catalog data tolerates a
+ *   few minutes of staleness, and a transient failure throws (so it is never
+ *   cached) and falls back to an empty render.
+ */
+const getHomeData = unstable_cache(
+  async (): Promise<HomeData> => {
+    const supabase = createServerSupabase();
+
+    const [
+      productsRes,
+      categoriesRes,
+      featuredRes,
+      newArrivalsRes,
+      bannerRes,
+      soldRes,
+    ] = await Promise.all([
       supabase
         .from('products')
         .select('id,name,slug,category_id,price,base_price,retail_price,images,stock_quantity,is_featured,total_sales,color_group_id,color_name,color_hex')
@@ -91,6 +102,7 @@ export default async function HomePage() {
         .select('key,value')
         .eq('key', 'home_mid_banner')
         .maybeSingle(),
+      supabase.rpc('get_best_sellers', { limit_count: 12 }),
     ]);
 
     const featuredProducts = (productsRes.data || []) as any[];
@@ -111,10 +123,9 @@ export default async function HomePage() {
       });
 
     let bestSellers: any[] = [];
-    let soldMap: Record<string, number> = {};
+    const soldMap: Record<string, number> = {};
 
     try {
-      const soldRes = await supabase.rpc('get_best_sellers', { limit_count: 12 });
       if (soldRes.error) {
         const fallback = await supabase
           .from('products')
@@ -144,32 +155,44 @@ export default async function HomePage() {
         }
       }
     } catch {
-      // best sellers RPC failed — continue without them
+      // best sellers failed — continue without them
     }
 
-    return (
-      <HomePageClient
-        initialProducts={featuredProducts as any}
-        initialNewArrivals={newArrivals as any}
-        initialCategories={categories as any}
-        initialFeaturedImages={featuredImages}
-        initialBestSellers={bestSellers as any}
-        initialBestSellerSoldMap={soldMap}
-        initialHomeMidBanner={homeMidBanner}
-      />
-    );
-  } catch (err) {
-    console.error('[home] render error:', err);
-    return (
-      <HomePageClient
-        initialProducts={[]}
-        initialNewArrivals={[]}
-        initialCategories={[]}
-        initialFeaturedImages={[]}
-        initialBestSellers={[]}
-        initialBestSellerSoldMap={{}}
-        initialHomeMidBanner={null}
-      />
-    );
+    return {
+      featuredProducts,
+      newArrivals,
+      categories,
+      featuredImages,
+      bestSellers,
+      soldMap,
+      homeMidBanner,
+    };
+  },
+  ['home-page-data-v1'],
+  { revalidate: 300, tags: ['home'] }
+);
+
+export default async function HomePage() {
+  let data: HomeData = EMPTY_HOME_DATA;
+
+  if (!isBuildTime) {
+    try {
+      data = await getHomeData();
+    } catch (err) {
+      console.error('[home] render error:', err);
+      data = EMPTY_HOME_DATA;
+    }
   }
+
+  return (
+    <HomePageClient
+      initialProducts={data.featuredProducts as any}
+      initialNewArrivals={data.newArrivals as any}
+      initialCategories={data.categories as any}
+      initialFeaturedImages={data.featuredImages}
+      initialBestSellers={data.bestSellers as any}
+      initialBestSellerSoldMap={data.soldMap}
+      initialHomeMidBanner={data.homeMidBanner}
+    />
+  );
 }

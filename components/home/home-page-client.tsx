@@ -980,7 +980,8 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
                             fill
                             sizes="(max-width: 768px) 100vw, 1200px"
                             className="object-cover"
-                            loading={idx === 0 ? 'eager' : 'lazy'}
+                            priority={idx === 0}
+                            loading={idx === 0 ? undefined : 'lazy'}
                             draggable={false}
                           />
                         ) : (
@@ -1219,8 +1220,8 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
 
                       {categories.length > 4 ? (
                         <>
-                          <CarouselPrevious className="-left-3 bg-white hover:bg-white border border-gray-300 shadow-md h-8 w-8" />
-                          <CarouselNext className="-right-3 bg-white hover:bg-white border border-gray-300 shadow-md h-8 w-8" />
+                          <CarouselPrevious className="left-1 top-8 -translate-y-1/2 z-20 h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 disabled:pointer-events-none disabled:opacity-0 transition" />
+                          <CarouselNext className="right-1 top-8 -translate-y-1/2 z-20 h-8 w-8 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 disabled:pointer-events-none disabled:opacity-0 transition" />
                         </>
                       ) : null}
                     </Carousel>
@@ -1311,8 +1312,8 @@ Whether you’re enjoying music on your daily commute or relaxing at home, our a
                         })}
                       </CarouselContent>
 
-                      <CarouselPrevious className="-left-4 bg-white/80 hover:bg-white border border-gray-200 shadow-sm h-10 w-10" />
-                      <CarouselNext className="-right-4 bg-white/80 hover:bg-white border border-gray-200 shadow-sm h-10 w-10" />
+                      <CarouselPrevious className="left-0 top-12 -translate-y-1/2 z-20 h-10 w-10 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 hover:shadow-lg disabled:pointer-events-none disabled:opacity-0 transition" />
+                      <CarouselNext className="right-0 top-12 -translate-y-1/2 z-20 h-10 w-10 rounded-full border border-gray-200 bg-white text-gray-700 shadow-md ring-1 ring-black/5 hover:bg-white hover:text-gray-900 hover:shadow-lg disabled:pointer-events-none disabled:opacity-0 transition" />
                     </Carousel>
                   </div>
                 </>
