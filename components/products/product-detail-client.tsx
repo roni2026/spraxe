@@ -1765,6 +1765,9 @@ export default function ProductDetailClient({
                       alt={product.name}
                       fill
                       sizes="(max-width: 1024px) 100vw, 50vw"
+                      // LCP image: load immediately at high priority instead of lazily.
+                      loading="eager"
+                      fetchPriority="high"
                       className={`object-contain transition-transform duration-200 ease-out ${zoomed ? 'scale-150' : 'scale-100'} cursor-zoom-in`}
                       style={{ transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%` }}
                     />
