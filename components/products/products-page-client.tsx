@@ -1116,7 +1116,7 @@ const { toast } = useToast();
       <Header />
       <div className="container mx-auto px-4 py-6 flex-1">
         {/* MOBILE BAR */}
-        <div className="md:hidden mb-6 flex gap-3 sticky top-[72px] z-30 bg-gray-50 pb-2">
+        <div className="md:hidden mb-6 flex gap-3 sticky top-0 z-30 bg-gray-50 pb-2">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" className="gap-2 bg-white flex-shrink-0">

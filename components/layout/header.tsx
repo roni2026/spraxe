@@ -293,14 +293,14 @@ export function Header() {
   return (
     <>
       {/* Mobile-only micro bar */}
-      <div className="bg-blue-950 text-white border-b border-white/10 md:hidden">
+      <div className="bg-[#0F48A2] text-white border-b border-white/10 md:hidden">
         <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-1.5 text-center text-xs font-semibold tracking-wide">
           Welcome to Spraxe
         </div>
       </div>
 
       {/* Top announcement bar (desktop only — mobile already has the micro bar) */}
-      <div className="hidden md:block bg-blue-950 text-white border-b border-white/10">
+      <div className="hidden md:block bg-[#0F48A2] text-white border-b border-white/10">
         <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-2 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3 min-w-0">
             <span className="inline-flex items-center gap-2 font-semibold tracking-wide">
@@ -337,7 +337,7 @@ export function Header() {
 
       {/* Main header */}
       <header
-        className={`sticky top-0 z-40 border-b border-gray-200 bg-white md:bg-white/90 md:backdrop-blur md:supports-[backdrop-filter]:bg-white/70 transition-transform duration-300 will-change-transform ${
+        className={`fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-[#0F48A2] md:bg-[#0F48A2]/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-[#0F48A2]/80 transition-transform duration-300 will-change-transform ${
           hideHeader && !mobileSearchOpen && !suggestOpen && !categorySidebarOpen ? '-translate-y-full' : 'translate-y-0'
         } ${isScrolled ? 'shadow-sm' : ''}`}
       >
@@ -350,17 +350,17 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setCategorySidebarOpen(true)}
-                className="rounded-xl"
+                className="rounded-xl text-white hover:bg-white/10"
                 aria-label="Open categories"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6 text-white" />
               </Button>
 
               <Link href="/" className="flex items-center gap-2" aria-label="Spraxe home">
                 <Image
-                  src="/header.png"
+                  src="/header_white.png"
                   alt="Spraxe"
-                  // Bigger logo (transparent background) for better visibility
+                  // Bigger logo (white version for dark header background)
                   width={420}
                   height={120}
                   className="h-10 sm:h-12 md:h-16 w-auto"
@@ -380,7 +380,7 @@ export function Header() {
                   onFocus={() => { cancelBlurClose(); setSuggestOpen(true); }}
                   onBlur={scheduleBlurClose}
                   onChange={(e) => { setSearchQuery(e.target.value); setSuggestOpen(true); }}
-                  className="pl-10 h-11 rounded-xl bg-white border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
+                  className="pl-10 h-11 rounded-xl bg-white border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 text-gray-900"
                 />
                 {renderSuggestions()}
               </div>
@@ -390,9 +390,9 @@ export function Header() {
             <div className="flex items-center gap-1 flex-shrink-0">
               {/* Wishlist */}
               <Link href="/wishlist" className="hidden md:block">
-                <Button variant="ghost" size="sm" className="relative gap-2 rounded-xl" aria-label="Wishlist">
-                  <Heart className="h-5 w-5" />
-                  <span className="hidden sm:inline font-semibold">Wishlist</span>
+                <Button variant="ghost" size="sm" className="relative gap-2 rounded-xl text-white hover:bg-white/10" aria-label="Wishlist">
+                  <Heart className="h-5 w-5 text-white" />
+                  <span className="hidden sm:inline font-semibold text-white">Wishlist</span>
                   {wishlistCount > 0 && (
                     <span className="absolute -top-1 -right-1">
                       <Badge className="bg-blue-900 hover:bg-blue-900 text-white px-2 py-0 text-[11px] rounded-full shadow">
@@ -405,16 +405,16 @@ export function Header() {
 
               {/* Track order icon (mobile only - search is in bottom nav) */}
               <Link href="/track-order" className="md:hidden">
-                <Button variant="ghost" size="icon" className="rounded-xl" aria-label="Track order">
-                  <PackageSearch className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="rounded-xl text-white hover:bg-white/10" aria-label="Track order">
+                  <PackageSearch className="h-5 w-5 text-white" />
                 </Button>
               </Link>
 
               {/* Cart */}
               <Link href="/cart" className="hidden md:block">
-                <Button variant="ghost" size="sm" className="relative gap-2 rounded-xl">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="hidden sm:inline font-semibold">Cart</span>
+                <Button variant="ghost" size="sm" className="relative gap-2 rounded-xl text-white hover:bg-white/10">
+                  <ShoppingCart className="h-5 w-5 text-white" />
+                  <span className="hidden sm:inline font-semibold text-white">Cart</span>
                   {itemCount > 0 && (
                     <span className="absolute -top-1 -right-1">
                       <Badge className="bg-red-600 hover:bg-red-600 text-white px-2 py-0 text-[11px] rounded-full shadow">
@@ -429,9 +429,9 @@ export function Header() {
               <div className="hidden md:block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2 rounded-xl">
-                    <User className="h-5 w-5" />
-                    <span className="hidden sm:inline font-semibold">
+                  <Button variant="ghost" size="sm" className="gap-2 rounded-xl text-white hover:bg-white/10">
+                    <User className="h-5 w-5 text-white" />
+                    <span className="hidden sm:inline font-semibold text-white">
                       {user ? adminName : 'Account'}
                     </span>
                   </Button>
@@ -558,7 +558,7 @@ export function Header() {
 
           {/* ✅ Mobile search overlay (no layout expansion on scroll) */}
           <div
-            className={`md:hidden absolute left-0 right-0 top-full z-50 px-3 sm:px-4 lg:px-6 pt-2 pb-3 bg-white border-b border-gray-200 shadow-sm transition-[transform,opacity] duration-200 ease-out ${
+            className={`md:hidden absolute left-0 right-0 top-full z-50 px-3 sm:px-4 lg:px-6 pt-2 pb-3 bg-[#0F48A2] border-b border-white/10 shadow-sm transition-[transform,opacity] duration-200 ease-out ${
               mobileSearchOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
             }`}
             style={{ willChange: 'transform,opacity' }}
@@ -591,35 +591,46 @@ export function Header() {
         </div>
       </header>
 
+      {/* Spacer to offset content below the fixed header.
+          Collapses (height 0) when the header is hidden so there's no gap. */}
+      <div
+        className={`w-full transition-all duration-300 ${
+          hideHeader && !mobileSearchOpen && !suggestOpen && !categorySidebarOpen
+            ? 'h-0'
+            : 'h-16 md:h-20'
+        }`}
+        aria-hidden="true"
+      />
+
       <CategorySidebar isOpen={categorySidebarOpen} onClose={() => setCategorySidebarOpen(false)} />
       <PhoneAuthDialog open={phoneAuthOpen} onOpenChange={setPhoneAuthOpen} />
       <EmailAuthDialog open={emailAuthOpen} onOpenChange={setEmailAuthOpen} />
 
       {/* Mobile bottom navigation bar — always visible on mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ touchAction: 'manipulation' }}>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0F48A2] border-t border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ touchAction: 'manipulation' }}>
         <div className="flex items-center justify-around h-16 px-1 pb-1">
-          <Link href="/" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
-            <Home className="h-5 w-5 text-blue-900" />
-            <span className="text-[11px] font-medium text-gray-600">Home</span>
+          <Link href="/" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
+            <Home className="h-5 w-5 text-white" />
+            <span className="text-[11px] font-medium text-white/90">Home</span>
           </Link>
           <button
             onClick={() => setCategorySidebarOpen(true)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
           >
-            <Menu className="h-5 w-5 text-gray-700" />
-            <span className="text-[11px] font-medium text-gray-600">Categories</span>
+            <Menu className="h-5 w-5 text-white" />
+            <span className="text-[11px] font-medium text-white/90">Categories</span>
           </button>
           <button
             onClick={() => setMobileSearchOpen((v) => !v)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
             aria-label="Search products"
           >
-            <Search className="h-5 w-5 text-gray-700" />
-            <span className="text-[11px] font-medium text-gray-600">Search</span>
+            <Search className="h-5 w-5 text-white" />
+            <span className="text-[11px] font-medium text-white/90">Search</span>
           </button>
-          <Link href="/cart" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
-            <ShoppingCart className="h-5 w-5 text-gray-700" />
-            <span className="text-[11px] font-medium text-gray-600">Cart</span>
+          <Link href="/cart" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
+            <ShoppingCart className="h-5 w-5 text-white" />
+            <span className="text-[11px] font-medium text-white/90">Cart</span>
             {itemCount > 0 && (
               <span className="absolute top-0.5 right-1/4">
                 <Badge className="bg-red-600 hover:bg-red-600 text-white px-1.5 py-0 text-[9px] rounded-full shadow">
@@ -628,20 +639,20 @@ export function Header() {
               </span>
             )}
           </Link>
-          <Link href="/wishlist" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
-            <Heart className="h-5 w-5 text-gray-700" />
-            <span className="text-[11px] font-medium text-gray-600">Wishlist</span>
+          <Link href="/wishlist" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
+            <Heart className="h-5 w-5 text-white" />
+            <span className="text-[11px] font-medium text-white/90">Wishlist</span>
             {wishlistCount > 0 && (
               <span className="absolute top-0.5 right-1/4">
-                <Badge className="bg-blue-900 hover:bg-blue-900 text-white px-1.5 py-0 text-[9px] rounded-full shadow">
+                <Badge className="bg-orange-500 hover:bg-orange-500 text-white px-1.5 py-0 text-[9px] rounded-full shadow">
                   {wishlistCount}
                 </Badge>
               </span>
             )}
           </Link>
-          <Link href={user ? '/dashboard' : '/login'} prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
-            <User className="h-5 w-5 text-gray-700" />
-            <span className="text-[11px] font-medium text-gray-600">Account</span>
+          <Link href={user ? '/dashboard' : '/login'} prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
+            <User className="h-5 w-5 text-white" />
+            <span className="text-[11px] font-medium text-white/90">Account</span>
           </Link>
         </div>
         {/* Safe area padding for iOS notch devices */}

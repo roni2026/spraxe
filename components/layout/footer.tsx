@@ -17,9 +17,9 @@ import {
 
 export function Footer() {
   return (
-    <footer className="bg-gray-950 text-gray-300 border-t border-white/5">
+    <footer className="bg-[#0F48A2] text-white border-t border-white/10">
       {/* Top trust bar */}
-      <div className="border-b border-white/5">
+      <div className="border-b border-white/10">
         {/* ✅ CHANGED: wider container + better side padding */}
         <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 lg:px-6 py-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -51,7 +51,7 @@ export function Footer() {
             {/* Footer logo (single mark + wordmark) */}
             <Link href="/" className="inline-flex items-center group">
               <Image
-                src="/footer.png"
+                src="/footer_white.png"
                 alt="Spraxe"
                 width={520}
                 height={140}
@@ -60,29 +60,29 @@ export function Footer() {
               />
             </Link>
 
-            <p className="text-sm leading-relaxed text-gray-400 max-w-sm">
+            <p className="text-sm leading-relaxed text-white/80 max-w-sm">
               Bangladesh’s modern e-commerce store for quality products at fair prices — with reliable delivery and
               real support.
             </p>
 
             {/* Newsletter (optional, no backend) */}
             <div className="pt-2">
-              <div className="text-xs font-semibold text-gray-300 mb-2">Get updates</div>
+              <div className="text-xs font-semibold text-white/90 mb-2">Get updates</div>
               <form onSubmit={(e) => e.preventDefault()} className="flex items-center gap-2">
                 <input
                   type="email"
                   placeholder="Your email"
-                  className="h-10 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white placeholder:text-gray-500
-                             outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-600/40"
+                  className="h-10 w-full rounded-xl border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/50
+                             outline-none focus:border-white/40 focus:ring-2 focus:ring-white/30"
                 />
                 <button
                   type="submit"
-                  className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition inline-flex items-center gap-2"
+                  className="h-10 px-4 rounded-xl bg-white text-[#0F48A2] text-sm font-bold hover:bg-white/90 transition inline-flex items-center gap-2"
                 >
                   Subscribe <ArrowRight className="h-4 w-4" />
                 </button>
               </form>
-              <div className="text-xs text-gray-500 mt-2">No spam. Unsubscribe anytime.</div>
+              <div className="text-xs text-white/60 mt-2">No spam. Unsubscribe anytime.</div>
             </div>
           </div>
 
@@ -120,28 +120,28 @@ export function Footer() {
             <FooterHeading>Contact</FooterHeading>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
-                <Mail className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                <a href="mailto:spraxecare@gmail.com" className="hover:text-blue-300 transition">
+                <Mail className="w-4 h-4 mt-0.5 flex-shrink-0 text-white/70" />
+                <a href="mailto:spraxecare@gmail.com" className="hover:text-white transition text-white/80">
                   spraxecare@gmail.com
                 </a>
               </li>
 
               <li className="flex items-start gap-2">
-                <Phone className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                <a href="tel:+8809638371951" className="hover:text-blue-300 transition">
+                <Phone className="w-4 h-4 mt-0.5 flex-shrink-0 text-white/70" />
+                <a href="tel:+8809638371951" className="hover:text-white transition text-white/80">
                   09638371951
                 </a>
               </li>
 
               <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                <span className="text-gray-400">Vatara, Dhaka, Bangladesh</span>
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-white/70" />
+                <span className="text-white/80">Vatara, Dhaka, Bangladesh</span>
               </li>
             </ul>
 
             {/* Socials */}
             <div className="mt-5">
-              <div className="text-xs font-semibold text-gray-300 mb-2">Follow</div>
+              <div className="text-xs font-semibold text-white/90 mb-2">Follow</div>
               <div className="flex items-center gap-2">
                 <SocialIcon href="https://facebook.com" label="Facebook" icon={<Facebook className="h-4 w-4" />} />
                 <SocialIcon href="https://instagram.com" label="Instagram" icon={<Instagram className="h-4 w-4" />} />
@@ -152,16 +152,16 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 pt-8 border-t border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <p className="text-xs text-gray-500">
+        <div className="mt-10 pt-8 border-t border-white/10 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <p className="text-xs text-white/60">
             &copy; {new Date().getFullYear()} Spraxe. All rights reserved.{' '}
-            <span className="text-gray-500">
+            <span className="text-white/60">
               Developed and Managed by{' '}
               <a
                 href="https://www.facebook.com/hridoy.hossen.roni.2025"
                 target="_blank"
                 rel="noreferrer"
-                className="text-gray-400 hover:text-blue-300 transition"
+                className="text-white/80 hover:text-white transition"
               >
                 Roni
               </a>
@@ -170,13 +170,13 @@ export function Footer() {
           </p>
 
           <div className="flex items-center gap-4 text-xs">
-            <Link href="/terms" className="text-gray-500 hover:text-gray-300 transition">
+            <Link href="/terms" className="text-white/60 hover:text-white transition">
               Terms
             </Link>
-            <Link href="/privacy" className="text-gray-500 hover:text-gray-300 transition">
+            <Link href="/privacy" className="text-white/60 hover:text-white transition">
               Privacy
             </Link>
-            <Link href="/support" className="text-gray-500 hover:text-gray-300 transition">
+            <Link href="/support" className="text-white/60 hover:text-white transition">
               Support
             </Link>
           </div>
@@ -193,7 +193,7 @@ function FooterHeading({ children }: { children: React.ReactNode }) {
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <li>
-      <Link href={href} className="text-gray-400 hover:text-blue-300 transition">
+      <Link href={href} className="text-white/80 hover:text-white transition">
         {children}
       </Link>
     </li>
@@ -215,8 +215,8 @@ function SocialIcon({
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="h-10 w-10 rounded-xl border border-white/10 bg-white/5 inline-flex items-center justify-center
-                 text-gray-200 hover:text-white hover:border-white/20 hover:bg-white/10 transition"
+      className="h-10 w-10 rounded-xl border border-white/20 bg-white/10 inline-flex items-center justify-center
+                 text-white hover:text-white hover:border-white/40 hover:bg-white/20 transition"
     >
       {icon}
     </a>
@@ -233,13 +233,13 @@ function TrustItem({
   desc: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/5 p-4">
-      <div className="h-10 w-10 rounded-xl bg-blue-600/15 border border-blue-600/20 text-blue-200 flex items-center justify-center">
+    <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/10 p-4">
+      <div className="h-10 w-10 rounded-xl bg-white/15 border border-white/20 text-white flex items-center justify-center">
         {icon}
       </div>
       <div>
         <div className="text-sm font-extrabold text-white">{title}</div>
-        <div className="text-xs text-gray-400 mt-0.5">{desc}</div>
+        <div className="text-xs text-white/70 mt-0.5">{desc}</div>
       </div>
     </div>
   );
