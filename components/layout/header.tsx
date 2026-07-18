@@ -228,6 +228,12 @@ export function Header() {
     let lastY = window.scrollY || 0;
     let lastScrolled = false;
     let lastHidden = false;
+    // Accumulate directional scroll distance so the header only toggles after a
+    // deliberate gesture. This removes the flicker caused by tiny jitters and
+    // momentum wobble around a single-pixel threshold.
+    let accum = 0;
+    const HIDE_AFTER = 64; // px of continuous downward scroll before hiding
+    const SHOW_AFTER = 48; // px of continuous upward scroll before revealing
 
     const update = () => {
       ticking = false;
@@ -240,16 +246,31 @@ export function Header() {
       }
 
       const delta = y - lastY;
-      // Ignore tiny jitters; require a small deliberate movement.
-      if (Math.abs(delta) > 6) {
-        // Hide only when scrolling down past the header area; any upward
-        // scroll (even a little) reveals it again.
-        const nextHidden = delta > 0 && y > 120;
-        if (nextHidden !== lastHidden) {
-          lastHidden = nextHidden;
-          setHideHeader(nextHidden);
+      lastY = y;
+
+      // Near the very top: always keep the header revealed.
+      if (y < 120) {
+        accum = 0;
+        if (lastHidden) {
+          lastHidden = false;
+          setHideHeader(false);
         }
-        lastY = y;
+        return;
+      }
+
+      // Reset the accumulator whenever the scroll direction flips so a change
+      // of intent responds immediately instead of fighting stale distance.
+      if ((delta > 0 && accum < 0) || (delta < 0 && accum > 0)) accum = 0;
+      accum += delta;
+
+      if (accum > HIDE_AFTER && !lastHidden) {
+        lastHidden = true;
+        setHideHeader(true);
+        accum = 0;
+      } else if (accum < -SHOW_AFTER && lastHidden) {
+        lastHidden = false;
+        setHideHeader(false);
+        accum = 0;
       }
     };
 
@@ -337,7 +358,7 @@ export function Header() {
 
       {/* Main header */}
       <header
-        className={`fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-[#0F48A2] md:bg-[#0F48A2]/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-[#0F48A2]/80 transition-transform duration-300 will-change-transform ${
+        className={`fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-[#0F48A2] md:bg-[#0F48A2]/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-[#0F48A2]/80 transform-gpu [backface-visibility:hidden] will-change-transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
           hideHeader && !mobileSearchOpen && !suggestOpen && !categorySidebarOpen ? '-translate-y-full' : 'translate-y-0'
         } ${isScrolled ? 'shadow-sm' : ''}`}
       >
@@ -606,8 +627,8 @@ export function Header() {
       <PhoneAuthDialog open={phoneAuthOpen} onOpenChange={setPhoneAuthOpen} />
       <EmailAuthDialog open={emailAuthOpen} onOpenChange={setEmailAuthOpen} />
 
-      {/* Mobile bottom navigation bar — always visible on mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0F48A2] border-t border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ touchAction: 'manipulation' }}>
+      {/* Mobile bottom navigation bar — mobile only (hidden on desktop/tablet ≥ md) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0F48A2] border-t border-white/10 shadow-[0_-2px_10px_rgba(0,0,0,0.08)]" style={{ touchAction: 'manipulation' }}>
         <div className="flex items-center justify-around h-16 px-1 pb-1">
           <Link href="/" prefetch className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-lg active:bg-white/10 transition-colors touch-manipulation focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
             <Home className="h-5 w-5 text-white" />
