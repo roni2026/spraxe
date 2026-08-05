@@ -1,0 +1,235 @@
+/* app/globals.css (professional + consistent design system) */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ Optional: remove the old rgb vars (kept out to avoid conflicts) */
+/*
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+*/
+
+@layer base {
+  :root {
+    /* ---------- Brand (Spraxe) ---------- */
+    /* Your UI uses a lot of blue-900; keep it consistent with theme */
+    --brand: 221 83% 28%; /* ~blue-900 */
+    --brand-foreground: 0 0% 98%;
+
+    /* ---------- Shadcn tokens ---------- */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Make primary = brand (so Button default matches your site) */
+    --primary: var(--brand);
+    --primary-foreground: var(--brand-foreground);
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: var(--brand);
+
+    --radius: 0.75rem;
+
+    /* Charts (optional) */
+    --chart-1: 221 83% 28%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+
+  .dark {
+    --brand: 221 83% 60%;
+    --brand-foreground: 222.2 84% 4.9%;
+
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: var(--brand);
+    --primary-foreground: var(--brand-foreground);
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: var(--brand);
+
+    --chart-1: 221 83% 60%;
+    --chart-2: 160 60% 55%;
+    --chart-3: 30 80% 60%;
+    --chart-4: 280 65% 70%;
+    --chart-5: 340 75% 65%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth overflow-x-hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* ---------- Quality-of-life defaults (professional feel) ---------- */
+@layer components {
+  /* nicer container rhythm */
+  .container {
+    @apply max-w-7xl;
+  }
+
+  /* consistent focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* ---------- Small UX polish ---------- */
+@layer utilities {
+  /* prevent iOS button tap highlight */
+  .tap-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+
+/* ===== Mobile-friendly improvements ===== */
+
+/* Smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent horizontal overflow on mobile */
+body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  /* Smaller font sizes on mobile for better fit */
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+
+  /* Reduce padding on mobile */
+  .container, .mx-auto {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Make tables scroll horizontally on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Better form inputs on mobile */
+  input, textarea, select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  /* Prevent layout shift from images loading */
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Safe area insets for iOS notch */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Better focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid #1e3a8a;
+  outline-offset: 2px;
+}
+
+/* Prevent flash of unstyled content */
+img[src=""], img[src="data:"] {
+  visibility: hidden;
+}
+
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
