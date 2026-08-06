@@ -134,5 +134,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ignore
   }
 
+  // Blog posts (/blog/{slug})
+  try {
+    const r = await supabase
+      .from('blogs')
+      .select('slug,updated_at,published_at')
+      .eq('is_published', true)
+      .not('slug', 'is', null)
+      .limit(2000);
+
+    for (const row of r.data || []) {
+      if (!row?.slug) continue;
+      urls.push({
+        url: `${SITE_URL}/blog/${row.slug}`,
+        lastModified: row.updated_at
+          ? new Date(row.updated_at)
+          : row.published_at
+          ? new Date(row.published_at)
+          : now,
+        changeFrequency: 'monthly',
+        priority: 0.5,
+      });
+    }
+  } catch {
+    // ignore
+  }
+
   return urls;
 }

@@ -200,6 +200,12 @@ export async function generateMetadata({
       images: img ? [{ url: img }] : undefined,
       type: 'website',
     },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: desc || undefined,
+      images: img ? [img] : undefined,
+    },
   };
 }
 
@@ -228,6 +234,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
       description: stripHtml(String(product.description || '')),
       sku: product.sku || undefined,
       image: img ? [img] : undefined,
+      url,
+      category: categoryChain.length
+        ? categoryChain.map((c) => c.name).join(' > ')
+        : undefined,
       brand: { '@type': 'Brand', name: 'Spraxe' },
       offers: {
         '@type': 'Offer',
@@ -236,6 +246,25 @@ export default async function ProductPage({ params }: { params: { slug: string }
         price: price ? String(price) : undefined,
         availability,
         itemCondition: 'https://schema.org/NewCondition',
+        // Merchant listing fields (price validity, delivery window, returns)
+        // make the product eligible for richer Google shopping results.
+        priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
+        shippingDetails: {
+          '@type': 'OfferShippingDetails',
+          shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'BD' },
+          deliveryTime: {
+            '@type': 'ShippingDeliveryTime',
+            handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
+            transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 5, unitCode: 'DAY' },
+          },
+        },
+        hasMerchantReturnPolicy: {
+          '@type': 'MerchantReturnPolicy',
+          applicableCountry: 'BD',
+          returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          merchantReturnDays: 7,
+          returnMethod: 'https://schema.org/ReturnByMail',
+        },
       },
     };
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { createServerSupabasePublicRead } from '@/lib/supabase/server';
+import { createServerSupabasePublicRead, getSiteUrl } from '@/lib/supabase/server';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { SafeImage } from '@/components/ui/safe-image';
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     const supabase = createServerSupabasePublicRead();
     const { data } = await supabase
       .from('blogs')
-      .select('title,excerpt,slug')
+      .select('title,excerpt,slug,cover_image_url,published_at,created_at')
       .eq('slug', params.slug)
       .eq('is_published', true)
       .maybeSingle();
@@ -29,10 +29,27 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       };
     }
 
+    const description = data.excerpt || undefined;
+    const image = data.cover_image_url || undefined;
+    const published = data.published_at || data.created_at || undefined;
+
     return {
       title: data.title,
-      description: data.excerpt || undefined,
+      description,
       alternates: { canonical: `/blog/${data.slug}` },
+      openGraph: {
+        title: data.title,
+        description,
+        type: 'article',
+        images: image ? [{ url: image }] : undefined,
+        publishedTime: published,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: data.title,
+        description,
+        images: image ? [image] : undefined,
+      },
     };
   } catch {
     return {
@@ -49,7 +66,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     const supabase = createServerSupabasePublicRead();
     const res = await supabase
       .from('blogs')
-      .select('id,title,slug,excerpt,content,cover_image_url,published_at,created_at')
+      .select('id,title,slug,excerpt,content,cover_image_url,published_at,created_at,updated_at')
       .eq('slug', params.slug)
       .eq('is_published', true)
       .maybeSingle();
@@ -84,8 +101,33 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const content = String(data.content || '');
   const date = data.published_at || data.created_at;
 
+  // Article structured data so the post can appear in Google news/blog carousels.
+  const site = getSiteUrl();
+  const articleLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: data.title,
+    description: data.excerpt || undefined,
+    image: data.cover_image_url ? [data.cover_image_url] : undefined,
+    datePublished: date || undefined,
+    dateModified: data.updated_at || date || undefined,
+    mainEntityOfPage: `${site}/blog/${data.slug}`,
+    author: { '@type': 'Organization', name: 'Spraxe Bangladesh', url: site },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Spraxe Bangladesh',
+      url: site,
+      logo: { '@type': 'ImageObject', url: `${site}/apple-touch-icon.png` },
+    },
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-50">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
+      />
       <Header />
 
       <main className="flex-1">

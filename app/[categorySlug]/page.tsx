@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { unstable_cache } from 'next/cache';
 import ProductsPageClient from '@/components/products/products-page-client';
-import { getSiteUrl } from '@/lib/supabase/server';
+import { createServerSupabasePublicRead, getSiteUrl } from '@/lib/supabase/server';
 import {
   getListingCategories,
   getProductFilterOptions,
@@ -12,6 +13,34 @@ import {
 
 // Cache category listings briefly for speed while still staying fresh.
 export const revalidate = 300;
+
+type CategorySeo = {
+  seo_title: string | null;
+  seo_description: string | null;
+  seo_keywords: string | null;
+};
+
+// Admin-managed SEO overrides from /admin/seo. Kept as a separate tiny query
+// (instead of changing the shared category list) so listing pages keep working
+// even before the optional seo_* columns are added to the database.
+async function fetchCategorySeoUncached(slug: string): Promise<CategorySeo | null> {
+  try {
+    const supabase = createServerSupabasePublicRead();
+    const { data, error } = await supabase
+      .from('categories')
+      .select('seo_title,seo_description,seo_keywords')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (error) return null;
+    return (data as CategorySeo | null) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const fetchCategorySeo = unstable_cache(fetchCategorySeoUncached, ['category-seo-v1'], {
+  revalidate: 300,
+});
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -32,19 +61,30 @@ export async function generateMetadata({ params }: { params: { categorySlug: str
   const site = getSiteUrl();
   try {
     // Reuse the cached category list instead of a dedicated per-request query.
-    const categories = await getListingCategories();
+    const [categories, seo] = await Promise.all([
+      getListingCategories(),
+      fetchCategorySeo(params.categorySlug).catch(() => null),
+    ]);
     const data = categories.find((c) => c.slug === params.categorySlug);
 
-    const title = data?.name ? String(data.name) : 'Products';
+    // Admin-managed SEO overrides (from /admin/seo) win over the auto-generated text.
+    const title =
+      (seo?.seo_title || '').trim() || (data?.name ? String(data.name) : 'Products');
     const canonical = `/${encodeURIComponent(data?.slug || params.categorySlug)}`;
     const image = (data as any)?.image_url || `${site}/og.png`;
-    const description = data?.name
+    const autoDescription = data?.name
       ? `Browse ${data.name} on Spraxe Bangladesh. Fast delivery, warranty support, and secure checkout.`
       : 'Browse products on Spraxe Bangladesh. Fast delivery and warranty support.';
+    const description = (seo?.seo_description || '').trim() || autoDescription;
+    const keywords = (seo?.seo_keywords || '')
+      .split(',')
+      .map((k) => k.trim())
+      .filter(Boolean);
 
     return {
       title,
       description,
+      keywords: keywords.length ? keywords : undefined,
       alternates: { canonical },
       openGraph: {
         title,

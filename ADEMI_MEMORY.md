@@ -1,6 +1,6 @@
 # Ademi Project Memory
 
-Updated: 2026-08-05T14:51:19.798Z
+Updated: 2026-08-05T18:30:00.000Z
 Project: spraxe-main
 Project path: /Users/yeamin/Downloads/spraxe-main
 
@@ -17,35 +17,27 @@ This file preserves the working brief for Ademi runs. Use it to remember earlier
 
 ## Current Request
 
-1. Fix Cloudinary upload failing with "could not authorize upload 401" (user no longer uses Supabase storage, only Cloudinary for images).
-2. Add an on-page SEO option as a new tab in the admin panel to edit SEO for each individual inventory item, for better search engine listings. User said: no need to build and verify the website after fixing.
+Make the on page seo more advanced with useful functions which are absent.
 
-## Work Completed
+## What Was Built (2026-08-05)
 
-### Fix 1: Cloudinary 401 "Could not authorize upload"
-- Root cause: `/api/cloudinary/sign` and `/api/cloudinary/delete` called `supabase.auth.getUser()` with no token on a fresh server client (persistSession: false, no cookies), so it never saw the browser login session and ALWAYS returned 401. Cloudinary itself was never reached; Cloudinary env vars are fine.
-- Fix follows the existing working pattern of `/api/place-order` (Bearer token):
-  - `lib/cloudinary/client.ts`: added `getAuthHeader()` which reads the session access token from the browser supabase client and sends `Authorization: Bearer <token>` on sign + delete requests.
-  - `app/api/cloudinary/sign/route.ts` and `app/api/cloudinary/delete/route.ts`: read the Bearer token from the request header and validate it explicitly via `supabase.auth.getUser(token)`.
-- Note: Supabase is still used for login/database (that's required); only image storage moved to Cloudinary.
+Upgraded the on-page SEO system (admin manager + actual search output):
 
-### Feature 2: On-Page SEO admin tab
-- New migration `supabase/migrations/20260805090000_add_product_seo_fields.sql`: adds `seo_title`, `seo_description`, `seo_keywords` text columns to `products`.
-- `lib/supabase/types.ts`: Product interface gained the three optional SEO fields.
-- New page `app/admin/seo/page.tsx`: searchable/paginated product list (20/page), Optimized vs Needs SEO badges, Edit SEO dialog with live Google search preview, meta title (60-char guide), meta description (160-char guide), keywords, auto-fill-from-product helper. If the DB columns are missing it shows a one-time setup banner with copyable SQL pointing to Admin → SQL Runner. Saves directly to Supabase from the browser (admin RLS policy "Admins can manage all products" allows it).
-- `app/admin/page.tsx`: added "On-Page SEO" quick-action link (Search icon) in the Catalog group.
-- `app/products/[slug]/page.tsx`: ProductRow + select query include the SEO fields; `generateMetadata` now prefers seo_title/seo_description/seo_keywords and falls back to the previous auto-generated values.
-- Product pages are cached with 300s revalidation, so SEO edits go live within ~5 minutes; search engines take days to reflect changes.
+- `lib/seo/audit.ts` — shared SEO engine: 0–100 scoring with per-check tips, smart word-boundary truncation, auto-generators for title ("Name — Price in Bangladesh"), description (uses price + delivery/warranty), and keywords. Unit-tested with Node (scores verified: 100/50/28 on good/mid/poor cases).
+- `app/admin/seo/page.tsx` (rewritten) + `components/admin/seo/shared.tsx` — SEO manager now has: health summary cards, per-item score badges with issue tooltips, status filter + score sorting, search, checkboxes with bulk "auto-fill empty fields" (never overwrites), a Categories tab (same tools), editor with live SEO checklist + Google preview + view-public-page link, and an indexing tools card (sitemap.xml, robots.txt copy, Search Console / Bing links). Setup SQL banner now covers products + categories.
+- `supabase/migrations/20260805120000_add_category_seo_fields.sql` — seo_title/seo_description/seo_keywords for categories. Not yet applied to the live DB; the admin page shows a setup banner with copyable SQL until it is run (same pattern as the earlier product SEO columns).
+- `app/[categorySlug]/page.tsx` — category pages use the SEO overrides (separate tiny cached query so nothing breaks before the migration runs).
+- `app/products/[slug]/page.tsx` — added Twitter card; Product JSON-LD enriched with url, category path, priceValidUntil, BD shipping (2–5 day transit), 7-day return policy (matches /returns page).
+- `app/blog/[slug]/page.tsx` — added OG/Twitter (article) metadata + Article JSON-LD.
+- `app/sitemap.ts` — published blog posts are now included.
+- `app/faq/page.tsx` — converted to a server component with metadata + FAQPage JSON-LD.
+- README gained an "On-Page SEO" section documenting the above.
 
-## Deployment Notes
+## Environment Notes
 
-- The SQL migration must be applied to the production database for the SEO tab to work (run it via Admin → SQL Runner or Supabase dashboard). The SEO page itself shows the SQL with a copy button if it's missing.
-- No build/verification was run per user request; npm/node are at /usr/local/bin (not on default PATH in this shell).
+- Node 24 is at /usr/local/bin/node; npm exists at /usr/local/lib/node_modules/npm but the npm registry is unreachable from this machine (blocked network), so `npm install`/`tsc`/`next build` could not be run. New pure-TS logic was tested directly with `node --experimental-strip-types`.
 
 ## Conversation Context
 
-[USER 2026-08-05T14:51:19.798Z]
-check my project i cannot add any image to my site using cloudinary it is saying could not authorize upload 401. i am no longer using supabase only cloudinary. what is the problem fix it.
-
-[USER follow-up]
-i want on page seo option which will show as a new tab in admin panel. from where i can do seo for each individual item of inventory to make better listing accross search engines. no need to build and verify website after fixing.
+[USER 2026-08-05T16:52:59.844Z]
+Make the on page seo more advanced with useful functions which are absent.

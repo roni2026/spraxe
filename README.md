@@ -146,6 +146,19 @@ This repo includes a migration that creates a policy allowing `select` where `is
 If you cannot change RLS right now, you can alternatively set `SUPABASE_SERVICE_ROLE_KEY` (server-only) on your host
 so `/blog` can read published posts.
 
+## On-Page SEO
+
+- **/admin/seo** — SEO manager for products and categories (admin only):
+  - SEO health score (0–100) for every product and category with clear fix suggestions
+  - Filters (Good / Needs work / Poor / No custom SEO) and sorting by score
+  - Bulk tools: select items and auto-fill empty SEO fields in one click (never overwrites your text)
+  - Editor with live SEO checklist, Google search preview, and character counters
+  - Indexing shortcuts (sitemap.xml, robots.txt, Google Search Console, Bing Webmaster Tools)
+- Saved titles/descriptions override the automatic text on product and category pages.
+- Product pages include rich structured data (price, stock, delivery window, return policy), blog posts include Article data, and the FAQ page includes FAQ data for Google rich results.
+- Blog posts are included in `sitemap.xml` automatically.
+- Database setup: apply `supabase/migrations/20260805090000_add_product_seo_fields.sql` and `supabase/migrations/20260805120000_add_category_seo_fields.sql` (or paste the SQL shown on the admin SEO page into Admin → SQL Runner).
+
 ## Adding Sample Data
 
 Sample categories have already been added. To add sample retail products:
